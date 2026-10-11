@@ -30,6 +30,7 @@ The sections are mandatory, in this order:
 Before delegating, check against this list:
 - [ ] No "TBD", "handle edge cases", "as appropriate" or choices left to the implementer.
 - [ ] Every expected value was computed by hand and cross-checked.
+- [ ] Every test helper and parametrized argument has its type named. Leaving it unspecified invites `Any` (stage 05 finding).
 - [ ] Every `path:line` reference was verified with `grep -n` after the last commit.
 - [ ] No ready-to-apply patches; signatures, data definitions and pseudocode only.
 
