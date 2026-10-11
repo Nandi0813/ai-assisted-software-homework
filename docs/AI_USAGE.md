@@ -89,6 +89,19 @@ Candidates are collected as the work proceeds. The final submission uses three o
 - **Verification.** `uv run mypy` passed with no issues in 31 files after the change (stage 05 receipt). `grep Any backend/tests/test_groups.py` finds nothing.
 - **Lesson.** A gap in the spec turns into a type the implementer chose itself; the stage-spec checklist now has to name parameter types.
 
+### Candidate 6: a real defect found by an agent's verification (stage 05b)
+
+- **Problem.** While verifying the new `Makefile`, the implementer ran `make reset-db`, and `uv run alembic upgrade head` failed with `ModuleNotFoundError: No module named 'app'` (`backend/app/migrations/env.py:6`). The whole suite (174 tests) was green, because pytest's `pythonpath = ["."]` hid the problem; the Alembic CLI branch had never run.
+- **Tool.** Claude Code `implementer` (Haiku). It stopped as its rules require instead of working around the problem. Main (Opus 5.5) then diagnosed it and planned the fix.
+- **AI suggestion.** Two options. Hack `sys.path` inside `env.py`, or use Alembic's documented `prepend_sys_path = %(here)s` together with `path_separator = os`. The second is needed because the repo path contains spaces, which Alembic would otherwise split on. The plan also required a regression test that runs the CLI in a subprocess **before** applying the fix.
+- **Decision.** ✍️ Accepted the configuration fix and rejected the `sys.path` hack.
+- **Verification.**
+  - `backend/tests/test_migrations.py::test_alembic_cli_upgrade_runs_outside_pytest_path`.
+  - The run against the faulty version: `docs/evidence/05b-alembic-cli-regression-before.log`, exit 1.
+  - The run against the fixed version: `docs/evidence/05b-alembic-cli-regression-after.log`, exit 0.
+  - **This is the faulty-vs-fixed test evidence required by the testing criterion. The defect occurred for real; it was not planted.**
+- **Limitation.** The test shells out to `sys.executable -m alembic`, so it depends on the virtualenv being complete.
+
 ## Dual implementation (D13)
 
 *Stage 06. Not yet run.*

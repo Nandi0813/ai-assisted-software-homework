@@ -2,7 +2,7 @@
 
 **State (2026-10-11):**
 - The specification is drafted (`docs/SPECIFICATION.md`). It hasn't been submitted to Moodle yet; the deadline is the end of week 6.
-- Stages 01–05 are accepted, and the gate is green. Backend: 174 tests, 100% coverage, 0 warnings.
+- Stages 01–05 and 05b (the Makefile) are accepted, and the gate is green. Backend: 175 tests, 100% coverage, 0 warnings. `make dev` starts both servers, and the README documents setup.
 - The grading-gap items are planned: D13 (dual-tool), D14 (working methods), D15 (`docs/AI_USAGE.md` log) and D16 (the `gate` and `stage-spec` skills). The stage index runs 05–10.
 
 **Next:**
