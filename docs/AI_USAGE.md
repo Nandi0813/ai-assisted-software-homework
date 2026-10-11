@@ -80,6 +80,15 @@ Candidates are collected as the work proceeds. The final submission uses three o
 - **Decision.** ✍️ Accepted.
 - **Verification.** The stage 04 receipt: `152 passed`, warning count 0 in `.logs/04-gate-pytest.log`.
 
+### Candidate 5: rejecting an implementer shortcut (stage 05)
+
+- **Problem.** The spec didn't name the type of a parametrized test argument. The implementer (Haiku) chose `dict[str, Any] | None` to satisfy `mypy --strict`, and flagged it as a hazard itself.
+- **Tool.** Claude Code `implementer` (Haiku), then main review (Opus 5.5).
+- **AI suggestion.** Keep `Any`; it type-checks.
+- **Decision.** ✍️ Rejected. `AGENTS.md` forbids `Any` without an inline reason, and every request body in the tests has only `str` values, so `dict[str, str] | None` is precise. The fix went through Addendum 05-A to the same implementer, not as a manual edit.
+- **Verification.** `uv run mypy` passed with no issues in 31 files after the change (stage 05 receipt). `grep Any backend/tests/test_groups.py` finds nothing.
+- **Lesson.** A gap in the spec turns into a type the implementer chose itself; the stage-spec checklist now has to name parameter types.
+
 ## Dual implementation (D13)
 
 *Stage 06. Not yet run.*
