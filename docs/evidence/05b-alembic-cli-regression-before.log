@@ -1,0 +1,73 @@
+warning: `VIRTUAL_ENV=<repo>/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+F                                                                        [100%]
+=================================== FAILURES ===================================
+______________ test_alembic_cli_upgrade_runs_outside_pytest_path _______________
+
+tmp_path = PosixPath('<tmp>')
+
+    def test_alembic_cli_upgrade_runs_outside_pytest_path(tmp_path: Path) -> None:
+        env = {k: v for k, v in os.environ.items() if k != "PYTHONPATH"}
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "alembic",
+                "-c",
+                str(BACKEND_DIR / "alembic.ini"),
+                "upgrade",
+                "head",
+            ],
+            cwd=tmp_path,
+            env=env,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+>       assert result.returncode == 0, result.stderr
+E       AssertionError: Traceback (most recent call last):
+E           File "<frozen runpy>", line 198, in _run_module_as_main
+E           File "<frozen runpy>", line 88, in _run_code
+E           File "<repo>/backend/.venv/lib/python3.14/site-packages/alembic/__main__.py", line 4, in <module>
+E             main(prog="alembic")
+E             ~~~~^^^^^^^^^^^^^^^^
+E           File "<repo>/backend/.venv/lib/python3.14/site-packages/alembic/config.py", line 1039, in main
+E             CommandLine(prog=prog).main(argv=argv)
+E             ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+E           File "<repo>/backend/.venv/lib/python3.14/site-packages/alembic/config.py", line 1029, in main
+E             self.run_cmd(cfg, options)
+E             ~~~~~~~~~~~~^^^^^^^^^^^^^^
+E           File "<repo>/backend/.venv/lib/python3.14/site-packages/alembic/config.py", line 963, in run_cmd
+E             fn(
+E             ~~^
+E                 config,
+E                 ^^^^^^^
+E                 *[getattr(options, k, None) for k in positional],
+E                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E                 **{k: getattr(options, k, None) for k in kwarg},
+E                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E             )
+E             ^
+E           File "<repo>/backend/.venv/lib/python3.14/site-packages/alembic/command.py", line 487, in upgrade
+E             script.run_env()
+E             ~~~~~~~~~~~~~~^^
+E           File "<repo>/backend/.venv/lib/python3.14/site-packages/alembic/script/base.py", line 550, in run_env
+E             util.load_python_file(self.dir, "env.py")
+E             ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+E           File "<repo>/backend/.venv/lib/python3.14/site-packages/alembic/util/pyfiles.py", line 114, in load_python_file
+E             module = load_module_py(module_id, path)
+E           File "<repo>/backend/.venv/lib/python3.14/site-packages/alembic/util/pyfiles.py", line 132, in load_module_py
+E             spec.loader.exec_module(module)  # type: ignore
+E             ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+E           File "<frozen importlib._bootstrap_external>", line 759, in exec_module
+E           File "<frozen importlib._bootstrap>", line 491, in _call_with_frames_removed
+E           File "<repo>/backend/app/migrations/env.py", line 6, in <module>
+E             from app.db import create_db_engine
+E         ModuleNotFoundError: No module named 'app'
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['<repo>/backend/.venv/bin/...env.py", line 6, in <module>\n    from app.db import create_db_engine\nModuleNotFoundError: No module named \'app\'\n').returncode
+
+tests/test_migrations.py:110: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_migrations.py::test_alembic_cli_upgrade_runs_outside_pytest_path
+1 failed in 0.17s

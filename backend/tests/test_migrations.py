@@ -1,3 +1,6 @@
+import os
+import subprocess
+import sys
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -9,6 +12,8 @@ from sqlalchemy import Engine, inspect, text
 
 from app.db import create_db_engine, make_alembic_config, run_migrations
 from app.repositories.models import Base
+
+BACKEND_DIR = Path(__file__).resolve().parents[1]
 
 
 @pytest.fixture
@@ -82,3 +87,25 @@ def test_sqlite_foreign_keys_enabled(engine: Engine) -> None:
 def test_create_db_engine_rejects_non_sqlite() -> None:
     with pytest.raises(ValueError, match="only SQLite database URLs are supported"):
         create_db_engine("postgresql://u@h/db")
+
+
+def test_alembic_cli_upgrade_runs_outside_pytest_path(tmp_path: Path) -> None:
+    env = {k: v for k, v in os.environ.items() if k != "PYTHONPATH"}
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "alembic",
+            "-c",
+            str(BACKEND_DIR / "alembic.ini"),
+            "upgrade",
+            "head",
+        ],
+        cwd=tmp_path,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert (tmp_path / "splitledger.db").exists()
