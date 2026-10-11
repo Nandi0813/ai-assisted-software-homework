@@ -41,6 +41,15 @@ class GroupRepository:
             )
         )
 
+    def member_rows(self, group_id: int) -> list[tuple[GroupMember, User]]:
+        stmt = (
+            select(GroupMember, User)
+            .join(User, User.id == GroupMember.user_id)
+            .where(GroupMember.group_id == group_id)
+            .order_by(GroupMember.id)
+        )
+        return [(member, user) for member, user in self._session.execute(stmt)]
+
     def groups_for_user(self, user_id: int) -> list[Group]:
         return list(
             self._session.scalars(

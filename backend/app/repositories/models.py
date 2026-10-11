@@ -1,5 +1,5 @@
-from sqlalchemy import ForeignKey, MetaData, String, UniqueConstraint, true
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy import CheckConstraint, ForeignKey, MetaData, String, UniqueConstraint, true
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 class Base(DeclarativeBase):
@@ -37,3 +37,51 @@ class GroupMember(Base):
     group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"))
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     active: Mapped[bool] = mapped_column(default=True, server_default=true())
+
+
+class ExpenseShare(Base):
+    __tablename__ = "expense_shares"
+    __table_args__ = (
+        UniqueConstraint("expense_id", "user_id", name="uq_expense_shares_expense_user"),
+        CheckConstraint("amount_cents >= 0", name="amount_non_negative"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    expense_id: Mapped[int] = mapped_column(ForeignKey("expenses.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    amount_cents: Mapped[int]
+    percent_bp: Mapped[int | None]
+
+
+class Expense(Base):
+    __tablename__ = "expenses"
+    __table_args__ = (
+        CheckConstraint("amount_cents > 0", name="amount_positive"),
+        CheckConstraint("split_type IN ('equal', 'exact', 'percent')", name="split_type_valid"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"))
+    payer_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    created_by: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    description: Mapped[str] = mapped_column(String(200))
+    amount_cents: Mapped[int]
+    split_type: Mapped[str] = mapped_column(String(10))
+    shares: Mapped[list[ExpenseShare]] = relationship(
+        cascade="all, delete-orphan", order_by="ExpenseShare.id", lazy="selectin"
+    )
+
+
+class Payment(Base):
+    __tablename__ = "payments"
+    __table_args__ = (
+        CheckConstraint("amount_cents > 0", name="amount_positive"),
+        CheckConstraint("from_id <> to_id", name="distinct_parties"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"))
+    from_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    to_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    created_by: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    amount_cents: Mapped[int]
