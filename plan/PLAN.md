@@ -38,3 +38,31 @@ Status markers:
 - `docs/AI_USAGE.md`: the tools, three decision cases, and the comparison of implementing one feature twice.
 - A faulty and a corrected version of one test, with both run logs.
 - A `v1.0` git tag at the first-working-version milestone, so the change request can be traced.
+
+**D13. Dual-tool implementation [confirmed 2026-10-11, grading: 5 points].** Stage 06 is implemented twice from the same spec and the same `AGENTS.md`:
+- **Tool A:** the Claude Code `implementer` subagent, on `main`.
+- **Tool B:** Google Antigravity (Gemini, the course-provided access), on the branch `compare/06-antigravity`, cut from the same base commit.
+
+Both runs are measured on the same criteria:
+- the Tier 1 and Tier 2 results;
+- deviations from the spec;
+- the review findings;
+- the number of corrections needed;
+- the size of the diff;
+- the wall-clock time.
+
+The result goes in `docs/AI_USAGE.md` under "Dual implementation". The branch is kept and pushed as evidence, and is never merged.
+
+**D14. Working-method comparison [confirmed 2026-10-11, grading: 2 MSc points].** One small UI feature, the settle-up panel in stage 08, is built twice:
+- **Method 1:** spec-driven. Main writes the spec and the implementer transcribes it.
+- **Method 2:** direct prompting. The user prompts one agent session conversationally from the acceptance-criterion text only, with no spec. This runs on the branch `compare/08-direct`.
+
+The comparison uses the same tests and review checklist. The result goes in `docs/AI_USAGE.md` under "Working methods".
+
+**D15. Running AI decision log [confirmed 2026-10-11].** `docs/AI_USAGE.md` is updated as part of every stage acceptance, not written at the end.
+- Each candidate decision case records: the problem, the tool and model, the context and key instruction, the AI's suggestion, the decision and its reasons, and the evidence (`path::test` or log).
+- The user writes or confirms the decision and reasons in their own words.
+
+**D16. Workflow automation in the repo [confirmed 2026-10-11, grading: 5 points].**
+- The project skills `.claude/skills/gate/` (Tier 2 gate plus receipt) and `.claude/skills/stage-spec/` (the stage spec template) are used for every stage from 05 on.
+- `AGENTS.md` is tool-agnostic, so Antigravity and Codex read the same rules (D13).

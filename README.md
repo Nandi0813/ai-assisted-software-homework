@@ -4,7 +4,7 @@ Group expense splitting web app. Members record shared expenses, see who owes wh
 
 Individual homework project for the *AI Assisted Software Development* MSc course (2026).
 
-> **Status:** specification phase. See [docs/SPECIFICATION.md](docs/SPECIFICATION.md).
+> **Status:** in development. The backend domain rules, persistence and auth are done; the groups and expenses API and the UI are next. See [plan/00_index.md](plan/00_index.md).
 
 ## Tech stack
 
@@ -17,4 +17,6 @@ Individual homework project for the *AI Assisted Software Development* MSc cours
 ## Documentation
 
 - [Specification & acceptance criteria](docs/SPECIFICATION.md)
+- [AI usage and decision cases](docs/AI_USAGE.md)
+- [Agent workflow rules](AGENTS.md) and [architecture decisions](plan/PLAN.md)
 - Course requirements are published in Moodle (not redistributed here).

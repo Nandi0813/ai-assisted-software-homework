@@ -1,6 +1,6 @@
 # Stage index
 
-Proposed sequence toward the first working version (week 10). Specs are written one at a time, just before delegation.
+Sequence toward the first working version (week 10), then the final version (week 13). Specs are written one at a time, just before delegation.
 
 | # | spec — one-line goal | status | dependencies |
 |---|----------------------|--------|--------------|
@@ -8,7 +8,9 @@ Proposed sequence toward the first working version (week 10). Specs are written 
 | 02 | `02_domain_splits.md`: pure equal, exact and percent split calculation with cent rounding (AC1–AC4 rules) | accepted | 01 |
 | 03 | `03_domain_settle_up.md`: balances and greedy settle-up (AC6 rules) | accepted | 02 |
 | 04 | `04_persistence_auth.md`: SQLAlchemy models, Alembic, register/login with JWT (AC5, AC8) | accepted | 01 |
-| 05 | `05_groups_api.md`: create a group, add a member, leave a group, membership checks (AC5, AC7) | not written | 03, 04 |
-| 06 | `06_expenses_payments_api.md`: expense CRUD, recording payments, balance and settle-up endpoints (AC1–AC4, AC6) | not written | 05 |
-| 07 | `07_frontend_flows.md`: login, groups, expense form, balances and settle-up UI | not written | 06 |
-| 08 | `08_deliverables.md`: `docs/TESTING.md`, faulty and fixed test runs, `docs/AI_USAGE.md`, `v1.0` tag | not written | 07 |
+| 05 | `05_groups_api.md`: create a group, add a member, leave a group, membership checks returning 404 (AC5, AC7) | not written | 03, 04 |
+| 06 | `06_expenses_payments_api.md`: expense CRUD, recording payments, balance and settle-up endpoints, restart persistence (AC1–AC4, AC6, AC8). **Built twice: implementer and Antigravity (D13)** | not written | 05 |
+| 07 | `07_frontend_auth_groups.md`: register and login screens, token handling, group list, create group, add member, leave group | not written | 05 |
+| 08 | `08_frontend_expenses.md`: expense form (equal, exact, percent), balances view, settle-up panel. **Settle-up panel built twice: spec-driven and direct prompting (D14)** | not written | 06, 07 |
+| 09 | `09_deliverables_v1.md`: README setup, `docs/TESTING.md` mapping each criterion to its checks with manual steps, faulty and fixed test with both logs, explicit regression test, `docs/AI_USAGE.md` finalized, `v1.0` tag | not written | 08 |
+| 10 | `10_change_request.md`: the instructor's change request, implemented from `v1.0` with regression and data-preservation checks | blocked (awaiting change request) | 09 |
