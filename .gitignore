@@ -1,0 +1,38 @@
+# IDE
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Node / React
+node_modules/
+dist/
+build/
+coverage/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Local data
+*.db
+*.sqlite3
+
+# Course materials (copyrighted, kept locally only)
+docs/Homework_requirements_EN.*
