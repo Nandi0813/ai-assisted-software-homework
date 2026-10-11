@@ -1,7 +1,6 @@
 import sqlite3
 from pathlib import Path
 
-import alembic.config
 from alembic import command
 from alembic.config import Config
 from sqlalchemy import create_engine, event
@@ -24,7 +23,7 @@ def _enable_sqlite_foreign_keys(
     cursor.close()
 
 
-def make_alembic_config(connection: Connection) -> alembic.config.Config:
+def make_alembic_config(connection: Connection) -> Config:
     cfg = Config()
     cfg.set_main_option("script_location", str(Path(__file__).parent / "migrations"))
     cfg.attributes["connection"] = connection

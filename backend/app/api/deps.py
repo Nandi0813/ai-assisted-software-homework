@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from app.config import Settings
 from app.repositories.models import User
 from app.services.auth import AuthError, AuthService
+from app.services.groups import GroupService
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,6 +47,13 @@ def get_auth_service(session: SessionDep, context: ContextDep) -> AuthService:
 
 
 AuthServiceDep = Annotated[AuthService, Depends(get_auth_service)]
+
+
+def get_group_service(session: SessionDep) -> GroupService:
+    return GroupService(session)
+
+
+GroupServiceDep = Annotated[GroupService, Depends(get_group_service)]
 
 
 def get_current_user(

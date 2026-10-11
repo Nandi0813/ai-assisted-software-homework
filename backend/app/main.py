@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.api.auth import router as auth_router
 from app.api.deps import AppContext
+from app.api.groups import router as groups_router
 from app.api.health import router as health_router
 from app.config import Settings, load_settings
 from app.db import create_db_engine, run_migrations
@@ -30,6 +31,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.context = context
     app.include_router(health_router, prefix="/api")
     app.include_router(auth_router, prefix="/api")
+    app.include_router(groups_router, prefix="/api")
     return app
 
 

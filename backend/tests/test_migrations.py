@@ -20,7 +20,9 @@ def engine(tmp_path: Path) -> Iterator[Engine]:
 
 def test_migrations_create_tables(engine: Engine) -> None:
     run_migrations(engine)
-    assert {"users", "alembic_version"} <= set(inspect(engine).get_table_names())
+    assert {"users", "groups", "group_members", "alembic_version"} <= set(
+        inspect(engine).get_table_names()
+    )
 
 
 def test_migrations_are_idempotent(engine: Engine) -> None:
@@ -28,8 +30,35 @@ def test_migrations_are_idempotent(engine: Engine) -> None:
     run_migrations(engine)
     with engine.connect() as c:
         assert c.execute(text("SELECT version_num FROM alembic_version")).scalars().all() == [
-            "0001"
+            "0002"
         ]
+
+
+def test_migration_0002_preserves_existing_users(engine: Engine) -> None:
+    with engine.begin() as c:
+        command.upgrade(make_alembic_config(c), "0001")
+    with engine.begin() as c:
+        c.execute(text("INSERT INTO users (username, password_hash) VALUES ('legacy', 'h')"))
+    run_migrations(engine)
+    with engine.connect() as c:
+        assert c.execute(text("SELECT id, username, password_hash FROM users")).all() == [
+            (1, "legacy", "h")
+        ]
+
+
+def test_migration_0002_downgrade_keeps_users(engine: Engine) -> None:
+    run_migrations(engine)
+    with engine.begin() as c:
+        c.execute(text("INSERT INTO users (username, password_hash) VALUES ('legacy', 'h')"))
+    with engine.begin() as c:
+        command.downgrade(make_alembic_config(c), "0001")
+    with engine.connect() as c:
+        assert c.execute(text("SELECT id, username, password_hash FROM users")).all() == [
+            (1, "legacy", "h")
+        ]
+    tables = set(inspect(engine).get_table_names())
+    assert "groups" not in tables
+    assert "group_members" not in tables
 
 
 def test_migrations_match_models(engine: Engine) -> None:
