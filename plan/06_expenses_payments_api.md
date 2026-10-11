@@ -1,7 +1,7 @@
 ---
-status: in_progress
-completion_date: null
-implementation_notes: ""
+status: accepted
+completion_date: 2026-10-11
+implementation_notes: "Tool A (Claude implementer) accepted on main after Addendum 06-A (deprecated Result.tuples() in spec 3.3). Accepted: F401 removal, isort order, ruff format, group name Trip in _setup, test placement. Spec-induced: LedgerService stores an unused self._users."
 ---
 
 # 06: Expenses, payments, balances and settle-up API
@@ -513,3 +513,61 @@ Stop and report; do not work around:
 - A file outside section 2, a new dependency, or a change in `app/domain/` would be needed.
 
 Done when: all four checks exit 0 with no warnings, and the report lists the files changed, the commands with their exit codes, the test totals, the deviations, the hazards, and **the wall-clock start and end time** (D13 measurement).
+
+## Addendum 06-A (spec error: deprecated API)
+
+**Cause.** Section 3.3 specified `list(self._session.execute(stmt).tuples())`. In SQLAlchemy 2.1, `Result.tuples()` is deprecated: `SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)`. That one call produced 59 warnings across the suite. This was main's error; the implementer stopped correctly.
+
+**Resolved recipe.**
+- In `backend/app/repositories/groups.py`, in `member_rows`, change only the return expression to `[(member, user) for member, user in self._session.execute(stmt)]`. Rows unpack directly, and the annotated return type `list[tuple[GroupMember, User]]` stays.
+- No other change.
+
+**Checks** (in `backend/`): `uv run pytest tests -q` must report **0 warnings**. Also run `uv run mypy`, `uv run ruff check app tests` and `uv run ruff format --check app tests`.
+
+Stop if mypy rejects the comprehension's type, and paste the error.
+
+*Note for D13: the Antigravity branch starts from `82b3ef0`, which does not have this addendum. Whether that implementation notices the deprecation on its own is part of the comparison.*
+
+## Acceptance receipt: tool A, Claude Code implementer on `main` (2026-10-11)
+
+**Review.** Main reviewed the full diff against sections 2–6, plus Addendum 06-A:
+- The models, the migration constraint names, `member_rows`, the `require_active_member` extraction, `LedgerRepository` (including the clear-flush-extend in `replace_expense`), `_resolve`'s check order and messages, the API schemas and error mapping, and all 23 ledger tests plus migration test 24 match the spec.
+- The AC2 tests compare **ordered lists**, which closes the stage 02 follow-up.
+- No `Any`, `type: ignore` or `noqa` anywhere in `app/` or `tests/`.
+
+**Implementer Tier 1.**
+- First run: pytest exited 0 but with 59 `SADeprecationWarning`s. Ruff gave 14 E501 errors, which were fixed mechanically with `ruff format`.
+- The implementer stopped on the warnings, as the "no warnings" stop condition requires.
+- Addendum 06-A was a spec error by main: `Result.tuples()` is deprecated in SQLAlchemy 2.1.
+- Final: all 4 checks exit 0, 233 passed, 0 warnings.
+
+**Tier 2 gate** (`/gate 06 backend`), logs in `.logs/06-gate-*.log`. The frontend is unchanged since `9943c99`.
+
+| Step | Command | Exit | Summary |
+|------|---------|------|---------|
+| backend tests | `uv run pytest --cov=app --cov-branch --cov-report=term-missing --cov-fail-under=90` | 0 | 233 passed, 0 warnings; coverage 100.00% (794 stmts, 124 branches) |
+| backend types | `uv run mypy` | 0 | no issues in 36 source files |
+| backend lint | `uv run ruff check .` | 0 | All checks passed |
+| backend format | `uv run ruff format --check .` | 0 | 36 files already formatted |
+
+**D13 measurements, tool A:**
+
+| Measure | Value |
+|---------|-------|
+| Wall clock | 12:09:26 → 12:12:26 (first pass); 12:13:11 after Addendum 06-A, so about 3 min 45 s |
+| Check-fix iterations | 2 mechanical (lint/format), plus 1 addendum round caused by a spec error |
+| Human or main interventions | 1 (Addendum 06-A) |
+| Spec deviations | 5, all mechanical or cosmetic |
+| Review findings against the implementer | 0 |
+| Diff vs `82b3ef0` (`backend/`) | 11 files, +1314 / −17 |
+
+**Accepted deviations:**
+- F401 unused import removed.
+- isort order of the `ledger_router` import.
+- `ruff format` wrapping.
+- Group name `"Trip"` in `_setup`.
+- Placement of migration test 24.
+
+**Findings, caused by the spec:** `LedgerService.__init__` stores `self._users`, which nothing uses. Remove it when the file is next touched (stage 06b).
+
+**Pending:** tool B (Antigravity, `compare/06-antigravity`) and the D13 comparison in `docs/AI_USAGE.md`.
