@@ -36,3 +36,6 @@ pnpm-debug.log*
 
 # Course materials (copyrighted, kept locally only)
 docs/Homework_requirements_EN.*
+
+# Generated submission PDFs (contain personal data)
+docs/SPECIFICATION*.pdf

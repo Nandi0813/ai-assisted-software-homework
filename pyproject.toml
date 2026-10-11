@@ -1,7 +1,7 @@
 [project]
-name = "hw"
+name = "splitledger"
 version = "0.1.0"
-description = "AI Assisted Software Development homework project"
+description = "Group expense splitting app (FastAPI + React)"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = []
