@@ -39,3 +39,6 @@ docs/Homework_requirements_EN.*
 
 # Generated submission PDFs (contain personal data)
 docs/SPECIFICATION*.pdf
+
+# Gate logs
+.logs/
