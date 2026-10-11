@@ -4,13 +4,18 @@ version = "0.1.0"
 description = "SplitLedger backend API (FastAPI)"
 requires-python = ">=3.14"
 dependencies = [
+    "alembic>=1.20.0",
     "fastapi>=0.143.0",
+    "pwdlib[argon2]>=0.3.1",
+    "pyjwt>=2.15.1",
+    "python-multipart>=0.0.32",
+    "sqlalchemy>=2.1.4",
     "uvicorn>=0.54.0",
 ]
 
 [dependency-groups]
 dev = [
-    "httpx>=0.28.1",
+    "httpx2>=2.13.1",
     "mypy>=2.4.0",
     "pytest>=9.1.1",
     "pytest-cov>=7.1.0",
@@ -25,6 +30,7 @@ addopts = "-ra --strict-markers --strict-config"
 [tool.coverage.run]
 branch = true
 source = ["app"]
+omit = ["app/migrations/env.py"]
 
 [tool.coverage.report]
 show_missing = true
