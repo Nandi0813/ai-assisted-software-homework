@@ -10,7 +10,8 @@ Sequence toward the first working version (week 10), then the final version (wee
 | 04 | `04_persistence_auth.md`: SQLAlchemy models, Alembic, register/login with JWT (AC5, AC8) | accepted | 01 |
 | 05 | `05_groups_api.md`: create, list and show groups, add a member by username, membership checks returning 404, migration 0002 preserving existing data (AC5, AC8) | accepted | 03, 04 |
 | 05b | `05b_dev_makefile.md`: root `Makefile` covering `make dev` (backend and frontend with reload, one command), test, lint, typecheck, format, check, migrate, reset-db, build, clean | accepted | 05 |
-| 06 | `06_expenses_payments_api.md`: expense CRUD, recording payments, balance and settle-up endpoints, leaving a group with the non-zero-balance rule, restart persistence (AC1–AC4, AC6, AC7, AC8). **Built twice: implementer and Antigravity (D13)** | not written | 05 |
+| 06 | `06_expenses_payments_api.md`: expense CRUD (equal, exact, percent; creator-only edit), payments, balances with settle-up, restart persistence (AC1–AC4, AC6, AC8). **Built twice: implementer and Antigravity (D13)** | in_progress | 05 |
+| 06b | `06b_leave_rejoin.md`: leave a group only with a zero balance (409 showing the outstanding amount), rejoin keeps the original join position (AC7) | not written | 06 |
 | 07 | `07_frontend_auth_groups.md`: register and login screens, token handling, group list, create group, add member, leave group | not written | 05 |
 | 08 | `08_frontend_expenses.md`: expense form (equal, exact, percent), balances view, settle-up panel. **Settle-up panel built twice: spec-driven and direct prompting (D14)** | not written | 06, 07 |
 | 09 | `09_deliverables_v1.md`: README setup, `docs/TESTING.md` mapping each criterion to its checks with manual steps, faulty and fixed test with both logs, explicit regression test, `docs/AI_USAGE.md` finalized, `v1.0` tag | not written | 08 |
