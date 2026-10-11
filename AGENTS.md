@@ -61,8 +61,8 @@ No TBDs, no "handle edge cases", no choices left to the worker. If main cannot f
 - The assignment is self-contained: spec path, owned files, checks, stop conditions. It names the files the implementer may touch; the implementer must preserve everyone else's edits.
 - The implementer runs only the focused checks named in the spec and reports: changed files, commands, genuine exit codes, results, log paths, deviations and hazards.
 - On a gap, main appends `Addendum NNx-A`, `NNx-B`, ... to the spec with a resolved recipe, then sends it to the same implementer. Never escalate model or effort; make the plan clearer instead.
-- Main reviews the full diff against the spec, then runs one final Tier 2 gate.
-- After acceptance, main appends an acceptance receipt to the spec (commands, exit codes, test and coverage totals, accepted deviations), then updates the spec frontmatter, the `plan/00_index.md` row and `plan/WHATS_NEXT.md`.
+- Main writes specs with the `stage-spec` skill (`.claude/skills/stage-spec/`), reviews the full diff against the spec, then runs one final Tier 2 gate with the `gate` skill (`.claude/skills/gate/`).
+- After acceptance, main appends an acceptance receipt to the spec (commands, exit codes, test and coverage totals, accepted deviations), then updates the spec frontmatter, the `plan/00_index.md` row and `plan/WHATS_NEXT.md`. It also records any decision-case candidates from the stage in `docs/AI_USAGE.md` (PLAN D15).
 - Commit only when the user authorizes it, staging exact paths. Never `git add .` or `git add -A`, never push, never use a destructive reset (`git reset --hard`, `git checkout -- .`, `git clean`).
 
 ## Waiting
