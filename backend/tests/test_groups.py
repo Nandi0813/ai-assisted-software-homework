@@ -31,6 +31,7 @@ def test_create_group_makes_creator_member(client: TestClient) -> None:
         "id": 1,
         "name": "Trip",
         "members": [{"id": 1, "username": "alice"}],
+        "former_members": [],
     }
 
 
@@ -123,6 +124,29 @@ def test_add_member_rejects_existing_member(client: TestClient, username: str) -
     response = client.post("/api/groups/1/members", json={"username": username}, headers=alice)
     assert response.status_code == 409
     assert response.json() == {"detail": "user is already a member"}
+
+
+def test_ac7_rejoin_reactivates_membership(client: TestClient) -> None:
+    alice = _user(client, "alice")
+    bob = _user(client, "bob")
+    _user(client, "carol")
+    assert client.post("/api/groups", json={"name": "Trip"}, headers=alice).status_code == 201
+    for username in ("bob", "carol"):
+        added = client.post("/api/groups/1/members", json={"username": username}, headers=alice)
+        assert added.status_code == 201
+    left = client.post("/api/groups/1/leave", headers=bob)
+    assert left.status_code == 204
+    alice_view = client.get("/api/groups/1", headers=alice)
+    assert alice_view.json()["former_members"] == [{"id": 2, "username": "bob"}]
+    rejoined = client.post("/api/groups/1/members", json={"username": "bob"}, headers=alice)
+    assert rejoined.status_code == 201
+    assert rejoined.json()["members"] == [
+        {"id": 1, "username": "alice"},
+        {"id": 2, "username": "bob"},
+        {"id": 3, "username": "carol"},
+    ]
+    assert rejoined.json()["former_members"] == []
+    assert client.get("/api/groups", headers=bob).json() == [{"id": 1, "name": "Trip"}]
 
 
 @pytest.mark.parametrize(

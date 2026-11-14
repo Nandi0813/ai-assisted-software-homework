@@ -31,16 +31,6 @@ class GroupRepository:
         self._session.flush()
         return member
 
-    def active_member_users(self, group_id: int) -> list[User]:
-        return list(
-            self._session.scalars(
-                select(User)
-                .join(GroupMember, GroupMember.user_id == User.id)
-                .where(GroupMember.group_id == group_id, GroupMember.active.is_(True))
-                .order_by(GroupMember.id)
-            )
-        )
-
     def member_rows(self, group_id: int) -> list[tuple[GroupMember, User]]:
         stmt = (
             select(GroupMember, User)

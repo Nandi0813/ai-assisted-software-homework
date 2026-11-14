@@ -36,6 +36,7 @@ class GroupDetailResponse(BaseModel):
     id: int
     name: str
     members: list[MemberResponse]
+    former_members: list[MemberResponse]
 
 
 def _detail(view: GroupView) -> GroupDetailResponse:
@@ -43,6 +44,7 @@ def _detail(view: GroupView) -> GroupDetailResponse:
         id=view.group.id,
         name=view.group.name,
         members=[MemberResponse(id=u.id, username=u.username) for u in view.members],
+        former_members=[MemberResponse(id=u.id, username=u.username) for u in view.former_members],
     )
 
 

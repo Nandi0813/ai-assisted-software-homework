@@ -15,6 +15,7 @@ from app.services.ledger import (
     ExpenseNotFoundError,
     LedgerValidationError,
     NotExpenseCreatorError,
+    OutstandingBalanceError,
     ShareInput,
 )
 
@@ -204,6 +205,14 @@ def _ledger_errors() -> Iterator[None]:
         ) from None
     except LedgerValidationError as e:
         raise HTTPException(status_code=422, detail=str(e)) from None
+    except OutstandingBalanceError as e:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "cannot leave the group with an outstanding balance of "
+                f"{format_cents(e.balance_cents)}"
+            ),
+        ) from None
 
 
 router = APIRouter(prefix="/groups/{group_id}", tags=["ledger"])
@@ -288,3 +297,9 @@ def get_balances(
     with _ledger_errors():
         view = service.balances(user, group_id)
     return _balances_out(view)
+
+
+@router.post("/leave", status_code=204)
+def leave_group(group_id: int, user: CurrentUserDep, service: LedgerServiceDep) -> None:
+    with _ledger_errors():
+        service.leave_group(user, group_id)

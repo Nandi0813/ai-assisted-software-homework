@@ -9,7 +9,6 @@ from app.domain.splits import SplitError, split_equal, split_exact, split_percen
 from app.repositories.groups import GroupRepository
 from app.repositories.ledger import LedgerRepository, ShareRow
 from app.repositories.models import Expense, Payment, User
-from app.repositories.users import UserRepository
 from app.services.groups import require_active_member
 
 
@@ -23,6 +22,12 @@ class NotExpenseCreatorError(Exception):
 
 class LedgerValidationError(Exception):
     pass
+
+
+class OutstandingBalanceError(Exception):
+    def __init__(self, balance_cents: int) -> None:
+        self.balance_cents = balance_cents
+        super().__init__(balance_cents)
 
 
 @dataclass(frozen=True, slots=True)
@@ -60,7 +65,6 @@ class LedgerService:
         self._session = session
         self._groups = GroupRepository(session)
         self._ledger = LedgerRepository(session)
-        self._users = UserRepository(session)
 
     def _active_order(self, group_id: int) -> dict[int, int]:
         active = [m for m, _ in self._groups.member_rows(group_id) if m.active]
@@ -173,10 +177,10 @@ class LedgerService:
             cents = parse_amount(amount)
         except MoneyError as e:
             raise LedgerValidationError(str(e)) from None
-        order = self._active_order(group_id)
-        if from_id not in order:
+        members = {m.user_id for m, _ in self._groups.member_rows(group_id)}
+        if from_id not in members:
             raise LedgerValidationError(f"user {from_id} is not a member of this group")
-        if to_id not in order:
+        if to_id not in members:
             raise LedgerValidationError(f"user {to_id} is not a member of this group")
         if from_id == to_id:
             raise LedgerValidationError("payment sender and recipient must differ")
@@ -213,3 +217,13 @@ class LedgerService:
             if m.active or bal[m.user_id] != 0
         ]
         return BalanceView(members, settle_up(bal))
+
+    def leave_group(self, user: User, group_id: int) -> None:
+        view = self.balances(user, group_id)
+        balance = next(m.balance_cents for m in view.members if m.user_id == user.id)
+        if balance != 0:
+            raise OutstandingBalanceError(balance)
+        membership = self._groups.get_membership(group_id, user.id)
+        assert membership is not None  # guaranteed by require_active_member
+        membership.active = False
+        self._session.commit()

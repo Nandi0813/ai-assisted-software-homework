@@ -23,6 +23,7 @@ class AlreadyMemberError(Exception):
 class GroupView:
     group: Group
     members: list[User]
+    former_members: list[User]
 
 
 def require_active_member(groups: GroupRepository, user: User, group_id: int) -> Group:
@@ -42,7 +43,10 @@ class GroupService:
         self._users = UserRepository(session)
 
     def _view(self, group: Group) -> GroupView:
-        return GroupView(group=group, members=self._groups.active_member_users(group.id))
+        rows = self._groups.member_rows(group.id)
+        members = [u for m, u in rows if m.active]
+        former_members = [u for m, u in rows if not m.active]
+        return GroupView(group=group, members=members, former_members=former_members)
 
     def create_group(self, owner: User, name: str) -> GroupView:
         group = self._groups.create(name)
@@ -61,8 +65,12 @@ class GroupService:
         target = self._users.get_by_username(username.lower())
         if target is None:
             raise UserNotFoundError(username)
-        if self._groups.get_membership(group_id, target.id) is not None:
+        membership = self._groups.get_membership(group_id, target.id)
+        if membership is not None and membership.active:
             raise AlreadyMemberError(username)
-        self._groups.add_member(group_id, target.id)
+        if membership is not None:
+            membership.active = True
+        else:
+            self._groups.add_member(group_id, target.id)
         self._session.commit()
         return self._view(group)

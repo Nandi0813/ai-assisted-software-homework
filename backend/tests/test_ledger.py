@@ -454,6 +454,117 @@ def test_ac6_recording_suggested_transfers_settles_everyone(client: TestClient) 
     assert client.get(f"{URL}/balances", headers=alice).json()["transfers"] == []
 
 
+#### Leaving and rejoining (AC7)
+
+
+def test_ac7_member_with_balance_cannot_leave(client: TestClient) -> None:
+    alice, bob, _ = _setup(client)
+    assert (
+        client.post(f"{URL}/expenses", json=_equal("90.00", [1, 2, 3]), headers=alice).status_code
+        == 201
+    )
+    bob_left = client.post(f"{URL}/leave", headers=bob)
+    assert bob_left.status_code == 409
+    assert bob_left.json() == {
+        "detail": "cannot leave the group with an outstanding balance of -30.00"
+    }
+    alice_left = client.post(f"{URL}/leave", headers=alice)
+    assert alice_left.status_code == 409
+    assert alice_left.json() == {
+        "detail": "cannot leave the group with an outstanding balance of 60.00"
+    }
+    assert client.get(URL, headers=bob).status_code == 200
+    assert _balances(client, alice) == [(1, "60.00"), (2, "-30.00"), (3, "-30.00")]
+
+
+def test_ac7_settled_member_can_leave_and_history_stays(client: TestClient) -> None:
+    alice, bob, _ = _setup(client)
+    assert (
+        client.post(f"{URL}/expenses", json=_equal("90.00", [1, 2, 3]), headers=alice).status_code
+        == 201
+    )
+    assert (
+        client.post(
+            f"{URL}/payments", json={"from_id": 2, "to_id": 1, "amount": "30.00"}, headers=bob
+        ).status_code
+        == 201
+    )
+    left = client.post(f"{URL}/leave", headers=bob)
+    assert left.status_code == 204
+    assert left.content == b""
+    assert client.get(URL, headers=bob).status_code == 404
+    assert client.get("/api/groups", headers=bob).json() == []
+    view = client.get(URL, headers=alice).json()
+    assert [m["id"] for m in view["members"]] == [1, 3]
+    assert [m["id"] for m in view["former_members"]] == [2]
+    expenses = client.get(f"{URL}/expenses", headers=alice).json()
+    assert len(expenses) == 1
+    assert expenses[0]["shares"] == [
+        {"user_id": 1, "amount": "30.00", "percent": None},
+        {"user_id": 2, "amount": "30.00", "percent": None},
+        {"user_id": 3, "amount": "30.00", "percent": None},
+    ]
+    assert len(client.get(f"{URL}/payments", headers=alice).json()) == 1
+    assert _balances(client, alice) == [(1, "30.00"), (3, "-30.00")]
+
+
+def test_ac7_member_without_expenses_can_leave(client: TestClient) -> None:
+    _, _, carol = _setup(client)
+    assert client.post(f"{URL}/leave", headers=carol).status_code == 204
+    again = client.post(f"{URL}/leave", headers=carol)
+    assert again.status_code == 404
+    assert again.json() == {"detail": "group not found"}
+
+
+def test_ac7_rejoined_member_keeps_join_position(client: TestClient) -> None:
+    alice, bob, _ = _setup(client)
+    assert client.post(f"{URL}/leave", headers=bob).status_code == 204
+    readded = client.post(f"{URL}/members", json={"username": "bob"}, headers=alice)
+    assert readded.status_code == 201
+    posted = client.post(f"{URL}/expenses", json=_equal("10.01", [3, 2]), headers=alice)
+    assert posted.status_code == 201
+    assert posted.json()["shares"] == [
+        {"user_id": 2, "amount": "5.01", "percent": None},
+        {"user_id": 3, "amount": "5.00", "percent": None},
+    ]
+
+
+def test_ac6_payment_with_former_member_settles(client: TestClient) -> None:
+    alice, bob, _ = _setup(client)
+    assert (
+        client.post(f"{URL}/expenses", json=_equal("90.00", [1, 2, 3]), headers=alice).status_code
+        == 201
+    )
+    assert (
+        client.post(
+            f"{URL}/payments", json={"from_id": 2, "to_id": 1, "amount": "30.00"}, headers=bob
+        ).status_code
+        == 201
+    )
+    assert client.post(f"{URL}/leave", headers=bob).status_code == 204
+    assert client.delete(f"{URL}/expenses/1", headers=alice).status_code == 204
+    balances = client.get(f"{URL}/balances", headers=alice).json()
+    assert balances["members"] == [
+        {"user_id": 1, "username": "alice", "balance": "-30.00", "active": True},
+        {"user_id": 2, "username": "bob", "balance": "30.00", "active": False},
+        {"user_id": 3, "username": "carol", "balance": "0.00", "active": True},
+    ]
+    assert balances["transfers"] == [
+        {
+            "from_id": 1,
+            "from_username": "alice",
+            "to_id": 2,
+            "to_username": "bob",
+            "amount": "30.00",
+        }
+    ]
+    recorded = client.post(
+        f"{URL}/payments", json={"from_id": 1, "to_id": 2, "amount": "30.00"}, headers=alice
+    )
+    assert recorded.status_code == 201
+    assert _balances(client, alice) == [(1, "0.00"), (3, "0.00")]
+
+
 #### Access control and persistence
 
 
@@ -467,6 +578,7 @@ def test_ac6_recording_suggested_transfers_settles_everyone(client: TestClient) 
         ("GET", "/api/groups/1/payments", None),
         ("POST", "/api/groups/1/payments", {"from_id": 1, "to_id": 1, "amount": "1.00"}),
         ("GET", "/api/groups/1/balances", None),
+        ("POST", "/api/groups/1/leave", None),
     ],
 )
 def test_ac5_non_member_gets_404(
@@ -496,6 +608,7 @@ def test_ac5_non_member_gets_404(
         ("GET", "/api/groups/1/payments", None),
         ("POST", "/api/groups/1/payments", {"from_id": 1, "to_id": 1, "amount": "1.00"}),
         ("GET", "/api/groups/1/balances", None),
+        ("POST", "/api/groups/1/leave", None),
     ],
 )
 def test_ac5_ledger_requires_authentication(
