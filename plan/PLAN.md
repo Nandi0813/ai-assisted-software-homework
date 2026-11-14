@@ -41,7 +41,7 @@ Status markers:
 
 **D13. Dual-tool implementation [confirmed 2026-10-11, grading: 5 points].** Stage 06 is implemented twice from the same spec and the same `AGENTS.md`:
 - **Tool A:** the Claude Code `implementer` subagent, on `main`.
-- **Tool B:** Gemini CLI (Gemini, the course-provided access), run headless by main on the branch `compare/06-antigravity` (branch name kept), cut from the same base commit. *Changed 2026-11-14 by the user: Gemini CLI instead of the Antigravity IDE, so main can run and time it.*
+- **Tool B:** OpenAI Codex CLI (`gpt-6-luna`), run headless by the user on the branch `compare/06-antigravity` (branch name kept), cut from the same base commit. *Changed 2026-11-14 by the user: first Gemini CLI instead of the Antigravity IDE; Gemini CLI then refused the free tier (`IneligibleTierError`), so the user chose Codex CLI.*
 
 Both runs are measured on the same criteria:
 - the Tier 1 and Tier 2 results;

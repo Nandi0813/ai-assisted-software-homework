@@ -571,3 +571,19 @@ Stop if mypy rejects the comprehension's type, and paste the error.
 **Findings, caused by the spec:** `LedgerService.__init__` stores `self._users`, which nothing uses. Remove it when the file is next touched (stage 06b).
 
 **Pending:** tool B (Antigravity, `compare/06-antigravity`) and the D13 comparison in `docs/AI_USAGE.md`.
+
+## Acceptance receipt: tool B, Codex CLI on `compare/06-antigravity` (2026-11-14)
+
+Codex CLI 0.164.0, model `gpt-6-luna`, `codex exec -s workspace-write`, from base `82b3ef0` (without Addendum 06-A). Commit `cf0e292`. Gemini CLI was tried first and refused (`IneligibleTierError`).
+
+| Measure | Value |
+|---------|-------|
+| Wall clock | 09:10:00 → 09:11:43 UTC (stopped), 09:12:06 → 09:19:40 after the correction; ≈ 9 min 17 s |
+| Corrections by main | 1: sandbox blocked `~/.cache/uv`; told to use `UV_CACHE_DIR=/tmp/uv-cache` |
+| Self-reported Tier 1 | 4/4 exit 0, 233 passed, "no warnings" |
+| Main's Tier 2 gate (`.logs/d13-B-*.log`) | pytest exit 0, 233 passed, coverage 100.00% (790 stmts, 124 branches), **59 `SADeprecationWarning`s** from the spec's `Result.tuples()`; mypy, ruff check, ruff format exit 0 |
+| Review findings | 1: the report's "no warnings" is false (spec stop condition violated). Not corrected on the branch, so the comparison keeps the raw result. |
+| Cross-check | tool A's ledger tests on B's code: 57 passed; B's on A's: 57 passed (`docs/evidence/d13-*.log`) |
+| Diff vs base | 11 files, +1288 / −17 (tool A: +1314 / −17) |
+
+Not merged (PLAN D13).

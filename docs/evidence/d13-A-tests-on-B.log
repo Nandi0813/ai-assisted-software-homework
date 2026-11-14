@@ -1,0 +1,8 @@
+.........................................................                [100%]
+=============================== warnings summary ===============================
+tests/test_ledger_A.py: 59 warnings
+  <repo-B>/backend/app/repositories/groups.py:51: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    return list(self._session.execute(stmt).tuples())
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+57 passed, 59 warnings in 8.54s

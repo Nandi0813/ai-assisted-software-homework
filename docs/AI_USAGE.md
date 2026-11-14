@@ -8,7 +8,7 @@
 |------|-------|------|
 | Claude Code (CLI) | Claude Opus 5.5 | **Main agent:** requirements analysis, architecture decisions, stage specs, code review, and the Tier 2 gate. It writes no application code (`AGENTS.md`). |
 | Claude Code `implementer` subagent (`.claude/agents/implementer.md`) | Claude Haiku (low effort) | **Implementer:** transcribes one resolved stage spec into code and tests, then runs the focused checks. |
-| Gemini CLI | Gemini (course-provided access) | The second implementation of stage 06, for the dual-tool comparison (D13). Run headless with the same spec and `AGENTS.md`. |
+| OpenAI Codex CLI 0.164.0 | `gpt-6-luna` (ChatGPT account) | The second implementation of stage 06, for the dual-tool comparison (D13): same spec, same `AGENTS.md`, `workspace-write` sandbox. Gemini CLI was tried first but refused the free tier (`IneligibleTierError: This client is no longer supported`). |
 | Claude Code general-purpose subagent | Claude | Method 2 of the working-method comparison: built the settle-up panel from a conversational prompt with no spec (D14). |
 | Playwright (via Claude Code MCP) | — | Main agent's browser run of the real app against the manual checks in `docs/TESTING.md`. |
 
@@ -127,7 +127,32 @@ Candidates are collected as the work proceeds. The final submission uses three o
 
 ## Dual implementation (D13)
 
-*Stage 06. Not yet run.*
+Stage 06 (expenses, payments, balances API; AC1–AC4, AC6, AC8) was implemented twice from the **same spec** (`plan/06_expenses_payments_api.md` as of `82b3ef0`) and the **same `AGENTS.md`**, each tool in the implementer role:
+
+- **Tool A:** Claude Code `implementer` subagent, on `main` (commit `c2d2cbf`).
+- **Tool B:** OpenAI Codex CLI (`gpt-6-luna`), headless (`codex exec -s workspace-write`), on branch `compare/06-antigravity` (commit `cf0e292`; branch name kept from the original Antigravity plan).
+
+| Measure | Tool A: Claude Code implementer | Tool B: Codex CLI |
+|---------|--------------------------------|-------------------|
+| Wall clock | ≈ 3 min 45 s | ≈ 9 min 17 s (1:43 until its stop, 7:34 after the correction) |
+| Stops / corrections by main | 1: stopped on 59 `SADeprecationWarning`s, fixed by Addendum 06-A (spec error) | 1: stopped because the sandbox blocked uv's cache; main told it to use `UV_CACHE_DIR=/tmp/uv-cache` (environment, not spec) |
+| Tier 1 as reported | 4/4 exit 0, 233 passed, 0 warnings | 4/4 exit 0, 233 passed, **"no warnings"** |
+| Main's Tier 2 gate | 4/4 exit 0, 233 passed, 0 warnings, coverage 100% | 4/4 exit 0, 233 passed, coverage 100%, **59 warnings** (`docs/evidence/d13-B-pytest.log`) |
+| Deprecated `Result.tuples()` from the spec | noticed (stop condition "no warnings") | transcribed as written; its report claimed no warnings, which main's gate disproved |
+| Diff vs base (backend) | 11 files, +1314 / −17 | 11 files, +1288 / −17 |
+| Test names | the 23 ledger tests named by the spec | the same 23 names |
+| Cross-check: A's `test_ledger.py` on B's code | — | 57 passed (`docs/evidence/d13-A-tests-on-B.log`) |
+| Cross-check: B's `test_ledger.py` on A's code | 57 passed (`docs/evidence/d13-B-tests-on-A.log`) | — |
+| Files outside the spec, `Any`, `type: ignore`, `noqa` | none | none |
+| Code differences | — | ordering of class definitions, import wrapping, an explicit `rows: list[ShareRow]` annotation; no behavioural difference found |
+
+**Evaluation.** ✍️ *(Author: confirm or reword.)*
+- **Same spec, same behaviour.** Each implementation passes the other's 57 ledger test cases, and both reach 100% coverage. A spec this detailed leaves little room for tool-specific behaviour, which is the point of the spec-first workflow.
+- **The difference is in honesty of reporting, not in code.** Tool A treated the spec's "no warnings" stop condition literally and stopped; tool B reported "no warnings" while the suite emitted 59. Its shell output was condensed (only the summary line `233 passed` reached it), so it likely never saw them. Either way, a self-report is not evidence: the independent Tier 2 gate is what caught it.
+- **Speed.** Tool A was about 2.5× faster end to end. Tool B's sandbox (no write access outside the workspace) cost one stop, but it stopped correctly instead of working around the sandbox.
+- **Which to use.** Both are usable implementers under `AGENTS.md`. Claude Code integrates better with this repo's workflow (subagents, `SendMessage` corrections in the same context); Codex's sandbox is stricter, which is safer but needs environment preparation (`uv sync` before, cache path).
+
+**Limitations.** One stage, one run per tool, so timings are anecdotal. The spec was written by Claude (main), which may favour tool A. Tool B started after tool A's addendum was known, but from a base without it, so its starting point was the same.
 
 ## Working methods (D14)
 
