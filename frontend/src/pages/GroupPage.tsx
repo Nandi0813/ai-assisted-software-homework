@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate, useParams } from 'react-router'
 import { ApiError, addMember, getGroup, leaveGroup } from '../api'
+import { SettleUpPanel } from '../components/SettleUpPanel'
 
 export function GroupPage() {
   const groupId = Number(useParams().groupId)
@@ -70,6 +71,7 @@ export function GroupPage() {
           </ul>
         </section>
       )}
+      <SettleUpPanel groupId={groupId} />
       <section>
         <form onSubmit={handleAdd}>
           <label>

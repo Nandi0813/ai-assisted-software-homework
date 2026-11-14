@@ -178,3 +178,34 @@ export function addMember(
 export function leaveGroup(groupId: number): Promise<void> {
   return send(`/groups/${groupId}/leave`, { method: 'POST' })
 }
+
+export interface MemberBalance {
+  user_id: number
+  username: string
+  balance: string
+  active: boolean
+}
+
+export interface Transfer {
+  from_id: number
+  from_username: string
+  to_id: number
+  to_username: string
+  amount: string
+}
+
+export interface Balances {
+  members: MemberBalance[]
+  transfers: Transfer[]
+}
+
+export function getBalances(groupId: number): Promise<Balances> {
+  return request<Balances>(`/groups/${groupId}/balances`)
+}
+
+export function recordPayment(
+  groupId: number,
+  payment: { from_id: number; to_id: number; amount: string },
+): Promise<void> {
+  return send(`/groups/${groupId}/payments`, { method: 'POST', json: payment })
+}

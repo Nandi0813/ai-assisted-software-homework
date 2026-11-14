@@ -10,6 +10,7 @@ function loggedIn(): void {
 const ALICE = { id: 1, username: 'alice' }
 const BOB = { id: 2, username: 'bob' }
 const CAROL = { id: 3, username: 'carol' }
+const SETTLED = { members: [], transfers: [] }
 const G = {
   id: 1,
   name: 'Trip',
@@ -22,6 +23,7 @@ describe('GroupPage', () => {
     loggedIn()
     mockFetch({
       'GET /api/auth/me': () => jsonResponse(200, ALICE),
+      'GET /api/groups/1/balances': () => jsonResponse(200, SETTLED),
       'GET /api/groups/1': () => jsonResponse(200, G),
     })
     renderApp('/groups/1')
@@ -37,6 +39,7 @@ describe('GroupPage', () => {
     loggedIn()
     mockFetch({
       'GET /api/auth/me': () => jsonResponse(200, ALICE),
+      'GET /api/groups/1/balances': () => jsonResponse(200, SETTLED),
       'GET /api/groups/1': () =>
         jsonResponse(200, { ...G, former_members: [CAROL] }),
     })
@@ -49,6 +52,7 @@ describe('GroupPage', () => {
     loggedIn()
     mockFetch({
       'GET /api/auth/me': () => jsonResponse(200, ALICE),
+      'GET /api/groups/1/balances': () => jsonResponse(200, SETTLED),
       'GET /api/groups/1': () =>
         jsonResponse(404, { detail: 'group not found' }),
     })
@@ -68,6 +72,7 @@ describe('GroupPage', () => {
     }
     mockFetch({
       'GET /api/auth/me': () => jsonResponse(200, ALICE),
+      'GET /api/groups/1/balances': () => jsonResponse(200, SETTLED),
       'GET /api/groups/1': () => jsonResponse(200, G),
       'POST /api/groups/1/members': add,
     })
@@ -85,6 +90,7 @@ describe('GroupPage', () => {
     loggedIn()
     mockFetch({
       'GET /api/auth/me': () => jsonResponse(200, ALICE),
+      'GET /api/groups/1/balances': () => jsonResponse(200, SETTLED),
       'GET /api/groups/1': () => jsonResponse(200, G),
       'POST /api/groups/1/members': () =>
         jsonResponse(404, { detail: 'user not found' }),
@@ -102,6 +108,7 @@ describe('GroupPage', () => {
     loggedIn()
     mockFetch({
       'GET /api/auth/me': () => jsonResponse(200, ALICE),
+      'GET /api/groups/1/balances': () => jsonResponse(200, SETTLED),
       'GET /api/groups/1': () => jsonResponse(200, G),
       'POST /api/groups/1/leave': () =>
         jsonResponse(409, {
@@ -122,6 +129,7 @@ describe('GroupPage', () => {
     loggedIn()
     mockFetch({
       'GET /api/auth/me': () => jsonResponse(200, ALICE),
+      'GET /api/groups/1/balances': () => jsonResponse(200, SETTLED),
       'GET /api/groups/1': () => jsonResponse(200, G),
       'POST /api/groups/1/leave': () => jsonResponse(204),
       'GET /api/groups': () => jsonResponse(200, []),
