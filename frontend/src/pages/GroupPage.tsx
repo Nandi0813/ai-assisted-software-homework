@@ -94,98 +94,118 @@ export function GroupPage() {
     ),
   )
   const nameOf = (id: number): string => names.get(id) ?? `user #${id}`
+  const memberCount = detail.members.length
   return (
-    <>
-      <h2>{detail.name}</h2>
-      <section aria-label="Members">
-        <h3>Members</h3>
-        <ul>
-          {detail.members.map((member) => (
-            <li key={member.id}>{member.username}</li>
-          ))}
-        </ul>
-      </section>
-      {detail.former_members.length > 0 && (
-        <section>
-          <h3>Former members</h3>
-          <ul>
-            {detail.former_members.map((member) => (
-              <li key={member.id}>{member.username}</li>
-            ))}
-          </ul>
-        </section>
-      )}
-      {balances.isPending ? (
-        <p>Loading…</p>
-      ) : balances.isError ? (
-        <p role="alert">{balances.error.message}</p>
-      ) : (
-        <BalancesPanel balances={balances.data} />
-      )}
-      {balances.isPending ? (
-        <p>Loading…</p>
-      ) : balances.isError ? (
-        <p role="alert">{balances.error.message}</p>
-      ) : (
-        <SettleUpPanel groupId={groupId} transfers={balances.data.transfers} />
-      )}
-      <section>
-        <ExpenseForm
-          key={editing === null ? 'new' : `edit-${editing.id}`}
-          groupId={groupId}
-          members={detail.members}
-          currentUserId={user.id}
-          editing={editing}
-          onDone={() => setEditing(null)}
-        />
-      </section>
-      {expenses.isPending ? (
-        <p>Loading…</p>
-      ) : expenses.isError ? (
-        <p role="alert">{expenses.error.message}</p>
-      ) : (
-        <ExpenseList
-          groupId={groupId}
-          expenses={expenses.data}
-          currentUserId={user.id}
-          nameOf={nameOf}
-          onEdit={setEditing}
-        />
-      )}
-      <section>
-        <PaymentForm
-          groupId={groupId}
-          members={detail.members}
-          currentUserId={user.id}
-        />
-      </section>
-      {payments.isPending ? (
-        <p>Loading…</p>
-      ) : payments.isError ? (
-        <p role="alert">{payments.error.message}</p>
-      ) : (
-        <PaymentList payments={payments.data} nameOf={nameOf} />
-      )}
-      <section>
-        <form onSubmit={handleAdd}>
-          <label>
-            Add member by username
-            <input
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
+    <div className="group-page">
+      <div className="group-head">
+        <Link to="/" className="back-link">
+          Your groups
+        </Link>
+        <h2>{detail.name}</h2>
+        <p className="muted">{`${memberCount} member${memberCount === 1 ? '' : 's'}`}</p>
+      </div>
+      <div className="group-grid">
+        <aside className="side">
+          {balances.isPending ? (
+            <p>Loading…</p>
+          ) : balances.isError ? (
+            <p role="alert">{balances.error.message}</p>
+          ) : (
+            <BalancesPanel balances={balances.data} />
+          )}
+          {balances.isPending ? (
+            <p>Loading…</p>
+          ) : balances.isError ? (
+            <p role="alert">{balances.error.message}</p>
+          ) : (
+            <SettleUpPanel
+              groupId={groupId}
+              transfers={balances.data.transfers}
             />
-          </label>
-          <button type="submit">Add member</button>
-        </form>
-        {add.isError && <p role="alert">{add.error.message}</p>}
-      </section>
-      <section>
-        <button type="button" onClick={() => leave.mutate()}>
-          Leave group
-        </button>
-        {leave.isError && <p role="alert">{leave.error.message}</p>}
-      </section>
-    </>
+          )}
+          <section>
+            <PaymentForm
+              groupId={groupId}
+              members={detail.members}
+              currentUserId={user.id}
+            />
+          </section>
+          <section aria-label="Members">
+            <h3>Members</h3>
+            <ul>
+              {detail.members.map((member) => (
+                <li key={member.id}>{member.username}</li>
+              ))}
+            </ul>
+          </section>
+          {detail.former_members.length > 0 && (
+            <section>
+              <h3>Former members</h3>
+              <ul>
+                {detail.former_members.map((member) => (
+                  <li key={member.id}>{member.username}</li>
+                ))}
+              </ul>
+            </section>
+          )}
+          <section>
+            <form onSubmit={handleAdd}>
+              <label>
+                Add member by username
+                <input
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                />
+              </label>
+              <button type="submit">Add member</button>
+            </form>
+            {add.isError && <p role="alert">{add.error.message}</p>}
+          </section>
+          <section className="leave">
+            <button
+              type="button"
+              className="button-danger"
+              onClick={() => leave.mutate()}
+            >
+              Leave group
+            </button>
+            {leave.isError && <p role="alert">{leave.error.message}</p>}
+          </section>
+        </aside>
+        <div className="main-col">
+          <section className="panel">
+            <ExpenseForm
+              key={editing === null ? 'new' : `edit-${editing.id}`}
+              groupId={groupId}
+              members={detail.members}
+              currentUserId={user.id}
+              editing={editing}
+              onDone={() => setEditing(null)}
+            />
+          </section>
+          {expenses.isPending ? (
+            <p>Loading…</p>
+          ) : expenses.isError ? (
+            <p role="alert">{expenses.error.message}</p>
+          ) : (
+            <ExpenseList
+              groupId={groupId}
+              expenses={expenses.data}
+              currentUserId={user.id}
+              nameOf={nameOf}
+              onEdit={setEditing}
+            />
+          )}
+          {payments.isPending ? (
+            <p>Loading…</p>
+          ) : payments.isError ? (
+            <p role="alert">{payments.error.message}</p>
+          ) : (
+            <PaymentList payments={payments.data} nameOf={nameOf} />
+          )}
+        </div>
+      </div>
+    </div>
   )
 }

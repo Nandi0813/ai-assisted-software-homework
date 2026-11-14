@@ -12,7 +12,7 @@ export function PaymentList({ payments, nameOf }: PaymentListProps) {
       {payments.length === 0 ? (
         <p>No payments yet.</p>
       ) : (
-        <ul>
+        <ul className="plain-list">
           {payments.map((payment) => (
             <li key={payment.id}>
               {`${nameOf(payment.from_id)} paid ${nameOf(payment.to_id)} ${payment.amount}`}

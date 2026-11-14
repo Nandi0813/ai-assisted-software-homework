@@ -28,14 +28,18 @@ export function SettleUpPanel({ groupId, transfers }: SettleUpPanelProps) {
       {transfers.length === 0 ? (
         <p>Everyone is settled up.</p>
       ) : (
-        <ul>
+        <ul className="transfers">
           {transfers.map((transfer) => (
-            <li key={`${transfer.from_id}-${transfer.to_id}`}>
+            <li
+              key={`${transfer.from_id}-${transfer.to_id}`}
+              className="transfer"
+            >
               <span>
                 {`${transfer.from_username} pays ${transfer.to_username} ${transfer.amount}`}
               </span>{' '}
               <button
                 type="button"
+                className="button-secondary"
                 disabled={record.isPending}
                 onClick={() => record.mutate(transfer)}
               >

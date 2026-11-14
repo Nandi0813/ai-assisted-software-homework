@@ -35,39 +35,46 @@ export function LoginPage() {
   const submitLabel = registering ? 'Create account' : 'Log in'
 
   return (
-    <section>
-      <h2>{submitLabel}</h2>
-      <form onSubmit={handleSubmit}>
-        <label>
-          Username
-          <input
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            autoComplete="username"
-            required
-          />
-        </label>
-        <label>
-          Password
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete={registering ? 'new-password' : 'current-password'}
-            required
-          />
-        </label>
-        <button type="submit" disabled={busy}>
-          {submitLabel}
+    <div className="narrow">
+      <section className="panel">
+        <h2>{submitLabel}</h2>
+        <p className="lede">
+          Split shared costs with your group and see who owes whom.
+        </p>
+        <form onSubmit={handleSubmit}>
+          <label>
+            Username
+            <input
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              autoComplete="username"
+              required
+            />
+          </label>
+          <label>
+            Password
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete={registering ? 'new-password' : 'current-password'}
+              required
+            />
+          </label>
+          <button type="submit" disabled={busy}>
+            {submitLabel}
+          </button>
+        </form>
+        {registering && (
+          <p>3–32 letters, digits or _; password at least 8 characters.</p>
+        )}
+        {error !== null && <p role="alert">{error}</p>}
+        <button type="button" className="button-link" onClick={switchMode}>
+          {registering
+            ? 'Have an account? Log in'
+            : 'Need an account? Register'}
         </button>
-      </form>
-      {registering && (
-        <p>3–32 letters, digits or _; password at least 8 characters.</p>
-      )}
-      {error !== null && <p role="alert">{error}</p>}
-      <button type="button" onClick={switchMode}>
-        {registering ? 'Have an account? Log in' : 'Need an account? Register'}
-      </button>
-    </section>
+      </section>
+    </div>
   )
 }

@@ -9,18 +9,24 @@ export default function App() {
 
   return (
     <>
-      <header>
-        <h1>
-          <Link to="/">SplitLedger</Link>
-        </h1>
-        {auth.user !== null && (
-          <div>
-            <span>{`Signed in as ${auth.user.username}`}</span>
-            <button type="button" onClick={auth.logout}>
-              Log out
-            </button>
-          </div>
-        )}
+      <header className="topbar">
+        <div className="topbar-inner">
+          <h1>
+            <Link to="/">SplitLedger</Link>
+          </h1>
+          {auth.user !== null && (
+            <div className="session">
+              <span>{`Signed in as ${auth.user.username}`}</span>
+              <button
+                type="button"
+                className="button-quiet"
+                onClick={auth.logout}
+              >
+                Log out
+              </button>
+            </div>
+          )}
+        </div>
       </header>
       <main>
         {auth.loading ? (

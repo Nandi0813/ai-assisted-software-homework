@@ -23,14 +23,14 @@ export function GroupsPage() {
   }
 
   return (
-    <>
+    <div className="narrow">
       <section>
         <h2>Your groups</h2>
         {groups.isPending && <p>Loading…</p>}
         {groups.isError && <p role="alert">{groups.error.message}</p>}
         {groups.data?.length === 0 && <p>No groups yet.</p>}
         {groups.data !== undefined && groups.data.length > 0 && (
-          <ul>
+          <ul className="group-list">
             {groups.data.map((group) => (
               <li key={group.id}>
                 <Link to={`/groups/${group.id}`}>{group.name}</Link>
@@ -39,7 +39,7 @@ export function GroupsPage() {
           </ul>
         )}
       </section>
-      <section>
+      <section className="panel">
         <form onSubmit={handleSubmit}>
           <label>
             New group name
@@ -54,6 +54,6 @@ export function GroupsPage() {
         </form>
         {create.isError && <p role="alert">{create.error.message}</p>}
       </section>
-    </>
+    </div>
   )
 }

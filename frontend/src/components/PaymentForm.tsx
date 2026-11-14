@@ -59,42 +59,48 @@ export function PaymentForm({
   return (
     <form aria-label="Record payment" onSubmit={handleSubmit}>
       <h3>Record payment</h3>
-      <label>
-        From
-        <select
-          value={fromId}
-          onChange={(e) => setFromId(Number(e.target.value))}
-        >
-          {members.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.username}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        To
-        <select
-          value={effectiveTo}
-          onChange={(e) => setToId(Number(e.target.value))}
-        >
-          {members.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.username}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        Payment amount
-        <input
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          inputMode="decimal"
-          required
-        />
-      </label>
-      <button type="submit">Record payment</button>
+      <div className="field-row">
+        <label>
+          From
+          <select
+            value={fromId}
+            onChange={(e) => setFromId(Number(e.target.value))}
+          >
+            {members.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.username}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          To
+          <select
+            value={effectiveTo}
+            onChange={(e) => setToId(Number(e.target.value))}
+          >
+            {members.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.username}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <div className="field-row">
+        <label>
+          Payment amount
+          <input
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            inputMode="decimal"
+            required
+          />
+        </label>
+      </div>
+      <div className="form-actions">
+        <button type="submit">Record payment</button>
+      </div>
       {error !== null && <p role="alert">{error}</p>}
     </form>
   )

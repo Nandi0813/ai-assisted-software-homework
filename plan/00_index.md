@@ -16,4 +16,5 @@ Sequence toward the first working version (week 10), then the final version (wee
 | 08 | `08_frontend_expenses.md`: expense form (equal, exact, percent), balances view, settle-up panel. **Settle-up panel built twice: spec-driven and direct prompting (D14)** | accepted | 06b, 07 |
 | 08c | `08c_fix_equal_split_new_members.md`: bug found in the browser run, equal split and payment recipient ignored members added after the page loaded; regression test with faulty/fixed logs | accepted | 08 |
 | 09 | `09_deliverables_v1.md`: README setup, `docs/TESTING.md` mapping each criterion to its checks with manual steps, faulty and fixed test with both logs, explicit regression test, `docs/AI_USAGE.md` finalized, `v1.0` tag | accepted | 08c |
+| 09b | `09b_ui_redesign.md`: visual redesign (balance bars, two-column group page, mobile layout); behaviour and tests unchanged | accepted | 09 |
 | 10 | `10_change_request.md`: the instructor's change request, implemented from `v1.0` with regression and data-preservation checks | blocked (awaiting change request) | 09 |

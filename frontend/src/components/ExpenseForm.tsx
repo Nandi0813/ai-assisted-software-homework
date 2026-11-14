@@ -147,99 +147,106 @@ export function ExpenseForm({
   return (
     <form aria-label={title} onSubmit={handleSubmit}>
       <h3>{title}</h3>
-      <label>
-        Description
-        <input
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          required
-          maxLength={200}
-        />
-      </label>
-      <label>
-        Amount
-        <input
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          inputMode="decimal"
-          required
-          placeholder="0.00"
-        />
-      </label>
-      <label>
-        Paid by
-        <select
-          value={payerId}
-          onChange={(e) => setPayerId(Number(e.target.value))}
-        >
-          {members.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.username}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        Split
-        <select
-          value={splitType}
-          onChange={(e) => setSplitType(e.target.value as SplitType)}
-        >
-          <option value="equal">Equal</option>
-          <option value="exact">Exact amounts</option>
-          <option value="percent">Percentages</option>
-        </select>
-      </label>
-      <fieldset>
-        <legend>Participants</legend>
-        {splitType === 'equal' &&
-          members.map((m) => (
-            <label key={m.id}>
-              <input
-                type="checkbox"
-                checked={!excluded.has(m.id)}
-                onChange={() => toggleExcluded(m.id)}
-              />{' '}
-              {m.username}
-            </label>
-          ))}
-        {splitType === 'exact' &&
-          members.map((m) => (
-            <label key={m.id}>
-              {m.username} amount
-              <input
-                inputMode="decimal"
-                value={values[m.id] ?? ''}
-                onChange={(e) => setValue(m.id, e.target.value)}
-              />
-            </label>
-          ))}
-        {splitType === 'percent' &&
-          members.map((m) => (
-            <label key={m.id}>
-              {m.username} %
-              <input
-                inputMode="decimal"
-                value={values[m.id] ?? ''}
-                onChange={(e) => setValue(m.id, e.target.value)}
-              />
-            </label>
-          ))}
-      </fieldset>
-      <button type="submit" disabled={save.isPending}>
-        {editing ? 'Save changes' : 'Add expense'}
-      </button>
-      {editing && (
-        <button
-          type="button"
-          onClick={() => {
-            resetToCreate()
-            onDone()
-          }}
-        >
-          Cancel
+      <div className="field-row">
+        <label>
+          Description
+          <input
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            required
+            maxLength={200}
+          />
+        </label>
+        <label>
+          Amount
+          <input
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            inputMode="decimal"
+            required
+            placeholder="0.00"
+          />
+        </label>
+        <label>
+          Paid by
+          <select
+            value={payerId}
+            onChange={(e) => setPayerId(Number(e.target.value))}
+          >
+            {members.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.username}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <div className="field-row">
+        <label>
+          Split
+          <select
+            value={splitType}
+            onChange={(e) => setSplitType(e.target.value as SplitType)}
+          >
+            <option value="equal">Equal</option>
+            <option value="exact">Exact amounts</option>
+            <option value="percent">Percentages</option>
+          </select>
+        </label>
+        <fieldset>
+          <legend>Participants</legend>
+          {splitType === 'equal' &&
+            members.map((m) => (
+              <label key={m.id}>
+                <input
+                  type="checkbox"
+                  checked={!excluded.has(m.id)}
+                  onChange={() => toggleExcluded(m.id)}
+                />{' '}
+                {m.username}
+              </label>
+            ))}
+          {splitType === 'exact' &&
+            members.map((m) => (
+              <label key={m.id}>
+                {m.username} amount
+                <input
+                  inputMode="decimal"
+                  value={values[m.id] ?? ''}
+                  onChange={(e) => setValue(m.id, e.target.value)}
+                />
+              </label>
+            ))}
+          {splitType === 'percent' &&
+            members.map((m) => (
+              <label key={m.id}>
+                {m.username} %
+                <input
+                  inputMode="decimal"
+                  value={values[m.id] ?? ''}
+                  onChange={(e) => setValue(m.id, e.target.value)}
+                />
+              </label>
+            ))}
+        </fieldset>
+      </div>
+      <div className="form-actions">
+        <button type="submit" disabled={save.isPending}>
+          {editing ? 'Save changes' : 'Add expense'}
         </button>
-      )}
+        {editing && (
+          <button
+            type="button"
+            className="button-secondary"
+            onClick={() => {
+              resetToCreate()
+              onDone()
+            }}
+          >
+            Cancel
+          </button>
+        )}
+      </div>
       {error !== null && <p role="alert">{error}</p>}
     </form>
   )
