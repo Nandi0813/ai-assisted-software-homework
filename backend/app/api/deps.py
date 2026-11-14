@@ -11,6 +11,7 @@ from app.config import Settings
 from app.repositories.models import User
 from app.services.auth import AuthError, AuthService
 from app.services.groups import GroupService
+from app.services.ledger import LedgerService
 
 
 @dataclass(frozen=True, slots=True)
@@ -54,6 +55,13 @@ def get_group_service(session: SessionDep) -> GroupService:
 
 
 GroupServiceDep = Annotated[GroupService, Depends(get_group_service)]
+
+
+def get_ledger_service(session: SessionDep) -> LedgerService:
+    return LedgerService(session)
+
+
+LedgerServiceDep = Annotated[LedgerService, Depends(get_ledger_service)]
 
 
 def get_current_user(

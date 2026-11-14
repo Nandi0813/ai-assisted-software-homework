@@ -25,9 +25,15 @@ def engine(tmp_path: Path) -> Iterator[Engine]:
 
 def test_migrations_create_tables(engine: Engine) -> None:
     run_migrations(engine)
-    assert {"users", "groups", "group_members", "alembic_version"} <= set(
-        inspect(engine).get_table_names()
-    )
+    assert {
+        "users",
+        "groups",
+        "group_members",
+        "expenses",
+        "expense_shares",
+        "payments",
+        "alembic_version",
+    } <= set(inspect(engine).get_table_names())
 
 
 def test_migrations_are_idempotent(engine: Engine) -> None:
@@ -35,7 +41,7 @@ def test_migrations_are_idempotent(engine: Engine) -> None:
     run_migrations(engine)
     with engine.connect() as c:
         assert c.execute(text("SELECT version_num FROM alembic_version")).scalars().all() == [
-            "0002"
+            "0003"
         ]
 
 
@@ -48,6 +54,21 @@ def test_migration_0002_preserves_existing_users(engine: Engine) -> None:
     with engine.connect() as c:
         assert c.execute(text("SELECT id, username, password_hash FROM users")).all() == [
             (1, "legacy", "h")
+        ]
+
+
+def test_migration_0003_preserves_groups(engine: Engine) -> None:
+    with engine.begin() as c:
+        command.upgrade(make_alembic_config(c), "0002")
+    with engine.begin() as c:
+        c.execute(text("INSERT INTO users (username, password_hash) VALUES ('legacy', 'h')"))
+        c.execute(text("INSERT INTO groups (name) VALUES ('Trip')"))
+        c.execute(text("INSERT INTO group_members (group_id, user_id, active) VALUES (1, 1, 1)"))
+    run_migrations(engine)
+    with engine.connect() as c:
+        assert c.execute(text("SELECT id, name FROM groups")).all() == [(1, "Trip")]
+        assert c.execute(text("SELECT group_id, user_id, active FROM group_members")).all() == [
+            (1, 1, 1)
         ]
 
 
