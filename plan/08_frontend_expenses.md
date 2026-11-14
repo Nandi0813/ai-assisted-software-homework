@@ -1,7 +1,7 @@
 ---
-status: in_progress
-completion_date: null
-implementation_notes: ""
+status: accepted
+completion_date: 2026-11-14
+implementation_notes: "Two addenda: 08-A (scope stage 07 member assertions to the Members region), 08-B (ExpenseForm state from lazy initialisers + key remount, fixes react-hooks/set-state-in-effect; prettier). Accepted: `e.target.value as SplitType` cast on the Split select (options fixed to the three values), placement of ledger sections, inline invalidation."
 ---
 
 # 08: Frontend — expenses, balances, settle-up, payments
@@ -225,3 +225,39 @@ npm run typecheck
 - Any cast other than the existing one in `request`, `any`, or `@ts-ignore` seems needed.
 - Duplicate accessible names make a query in section 6 ambiguous.
 - Any backend change seems needed.
+
+## Addendum 08-A (2026-11-14)
+
+**Gap.** Stage 07 test `GroupPage > shows members` uses `getByText('alice')` / `getByText('bob')`. After stage 08 these names also appear in the balances table and in `<option>`s, so the query is ambiguous (stop condition hit correctly).
+
+**Resolution.** Allowed assertion change, this test only: scope both queries to the Members section — `within(await screen.findByRole('region', { name: 'Members' })).getByText('alice')` (likewise `bob`), with `within` imported from `@testing-library/react`. Same for any other stage 07 assertion that becomes ambiguous for the same reason (scope to the section that the stage 07 test meant). No other assertion changes.
+
+**Accepted deviations** (from the report): `useEffect(..., [editing])` with create-mode reset in `onSuccess`/Cancel; `if (user === null) return null` after hooks; ledger sections between Former members and the add-member form; explicit guard instead of `!`; BalancesPanel zero-test data; `mockReturnValueOnce` chain; inline invalidation.
+
+Then run all four Tier 1 commands of section 6.
+
+## Addendum 08-B (2026-11-14)
+
+**Gap.** Main's Tier 2 gate: `npm run lint` exit 1 — `react-hooks/set-state-in-effect` at `src/components/ExpenseForm.tsx:62` (the effect that loads `editing`). `npx prettier --check .` exit 1 on `src/api.ts`, `src/components/ExpenseForm.tsx`, `src/components/Payments.test.tsx`, `src/components/SettleUpPanel.test.tsx`. Tests (44), typecheck and build are green.
+
+**Resolution.**
+1. `ExpenseForm.tsx`: delete the `useEffect` and the `useEffect` import. Initialise every state from `editing` with lazy `useState` initialisers instead: `description` = `editing?.description ?? ''`; `amount` = `editing?.amount ?? ''`; `payerId` = `editing?.payer_id ?? defaultPayer(...)`; `splitType` = `editing?.split_type ?? 'equal'`; `checked` = share user ids when editing, else all member ids; `values` = per share (`percent ?? ''` for percent, `amount` otherwise) when editing, else `{}`. Keep `resetToCreate` as is.
+2. `GroupPage.tsx`: render the form as `<ExpenseForm key={editing === null ? 'new' : `edit-${editing.id}`} ... />` so switching between create and an edited expense remounts it with fresh state.
+3. Run `npx prettier --write` on exactly the four files listed above (mechanical formatting, implementer only).
+4. Re-run all four Tier 1 commands.
+
+## Acceptance receipt (2026-11-14)
+
+Implementer wall clock: 09:42:14–~09:50 CET (3 rounds: initial, 08-A, 08-B).
+
+Tier 2 gate, `frontend/`, logs `.logs/08-*.log` (after 08-B):
+
+| Command | Exit | Result |
+|---------|------|--------|
+| `npm run typecheck` | 0 | clean |
+| `npm run lint` | 0 | clean (first gate run: exit 1, `react-hooks/set-state-in-effect`, fixed by 08-B) |
+| `npm run test -- --run` | 0 | 9 files, 44 tests passed |
+| `npm run build` | 0 | 309.59 kB JS (95.88 kB gzip) |
+| `npx prettier --check .` | 0 | clean (first gate run: 4 files, fixed by 08-B) |
+
+Review: components match 3.2–3.8. Casts: `as T` in `request` (allowed) and `as SplitType` on the select (accepted, see notes).

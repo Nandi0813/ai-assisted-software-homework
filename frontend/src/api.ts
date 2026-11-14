@@ -178,3 +178,117 @@ export function addMember(
 export function leaveGroup(groupId: number): Promise<void> {
   return send(`/groups/${groupId}/leave`, { method: 'POST' })
 }
+
+export type SplitType = 'equal' | 'exact' | 'percent'
+
+export interface Share {
+  user_id: number
+  amount: string
+  percent: string | null
+}
+
+export interface Expense {
+  id: number
+  description: string
+  amount: string
+  payer_id: number
+  created_by: number
+  split_type: SplitType
+  shares: Share[]
+}
+
+export type SplitRequest =
+  | { type: 'equal'; participants: number[] }
+  | { type: 'exact'; shares: { user_id: number; amount: string }[] }
+  | { type: 'percent'; shares: { user_id: number; percent: string }[] }
+
+export interface ExpenseRequest {
+  description: string
+  amount: string
+  payer_id: number
+  split: SplitRequest
+}
+
+export interface Payment {
+  id: number
+  from_id: number
+  to_id: number
+  amount: string
+  created_by: number
+}
+
+export interface PaymentRequest {
+  from_id: number
+  to_id: number
+  amount: string
+}
+
+export interface MemberBalance {
+  user_id: number
+  username: string
+  balance: string
+  active: boolean
+}
+
+export interface Transfer {
+  from_id: number
+  from_username: string
+  to_id: number
+  to_username: string
+  amount: string
+}
+
+export interface Balances {
+  members: MemberBalance[]
+  transfers: Transfer[]
+}
+
+export function listExpenses(groupId: number): Promise<Expense[]> {
+  return request<Expense[]>(`/groups/${groupId}/expenses`)
+}
+
+export function createExpense(
+  groupId: number,
+  body: ExpenseRequest,
+): Promise<Expense> {
+  return request<Expense>(`/groups/${groupId}/expenses`, {
+    method: 'POST',
+    json: body,
+  })
+}
+
+export function updateExpense(
+  groupId: number,
+  expenseId: number,
+  body: ExpenseRequest,
+): Promise<Expense> {
+  return request<Expense>(`/groups/${groupId}/expenses/${expenseId}`, {
+    method: 'PUT',
+    json: body,
+  })
+}
+
+export function deleteExpense(
+  groupId: number,
+  expenseId: number,
+): Promise<void> {
+  return send(`/groups/${groupId}/expenses/${expenseId}`, { method: 'DELETE' })
+}
+
+export function listPayments(groupId: number): Promise<Payment[]> {
+  return request<Payment[]>(`/groups/${groupId}/payments`)
+}
+
+export function recordPayment(
+  groupId: number,
+  body: PaymentRequest,
+): Promise<Payment> {
+  return request<Payment>(`/groups/${groupId}/payments`, {
+    method: 'POST',
+    json: body,
+  })
+}
+
+export function getBalances(groupId: number): Promise<Balances> {
+  return request<Balances>(`/groups/${groupId}/balances`)
+}

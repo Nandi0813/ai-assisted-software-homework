@@ -1,7 +1,13 @@
 import { describe, it, expect } from 'vitest'
-import { screen, fireEvent } from '@testing-library/react'
+import { screen, fireEvent, within } from '@testing-library/react'
 import { setToken } from '../api'
-import { jsonResponse, mockFetch, renderApp, type Handler } from '../test/utils'
+import {
+  groupRoutes,
+  jsonResponse,
+  mockFetch,
+  renderApp,
+  type Handler,
+} from '../test/utils'
 
 function loggedIn(): void {
   setToken('t')
@@ -21,24 +27,22 @@ describe('GroupPage', () => {
   it('shows members', async () => {
     loggedIn()
     mockFetch({
-      'GET /api/auth/me': () => jsonResponse(200, ALICE),
-      'GET /api/groups/1': () => jsonResponse(200, G),
+      ...groupRoutes({ group: G }),
     })
     renderApp('/groups/1')
     expect(
       await screen.findByRole('heading', { name: 'Trip' }),
     ).toBeInTheDocument()
-    expect(screen.getByText('alice')).toBeInTheDocument()
-    expect(screen.getByText('bob')).toBeInTheDocument()
+    const members = within(screen.getByRole('region', { name: 'Members' }))
+    expect(members.getByText('alice')).toBeInTheDocument()
+    expect(members.getByText('bob')).toBeInTheDocument()
     expect(screen.queryByText('Former members')).not.toBeInTheDocument()
   })
 
   it('shows former members', async () => {
     loggedIn()
     mockFetch({
-      'GET /api/auth/me': () => jsonResponse(200, ALICE),
-      'GET /api/groups/1': () =>
-        jsonResponse(200, { ...G, former_members: [CAROL] }),
+      ...groupRoutes({ group: { ...G, former_members: [CAROL] } }),
     })
     renderApp('/groups/1')
     expect(await screen.findByText('Former members')).toBeInTheDocument()
@@ -48,7 +52,7 @@ describe('GroupPage', () => {
   it('shows not found', async () => {
     loggedIn()
     mockFetch({
-      'GET /api/auth/me': () => jsonResponse(200, ALICE),
+      ...groupRoutes(),
       'GET /api/groups/1': () =>
         jsonResponse(404, { detail: 'group not found' }),
     })
@@ -67,8 +71,7 @@ describe('GroupPage', () => {
       return jsonResponse(201, { ...G, members: [ALICE, BOB, CAROL] })
     }
     mockFetch({
-      'GET /api/auth/me': () => jsonResponse(200, ALICE),
-      'GET /api/groups/1': () => jsonResponse(200, G),
+      ...groupRoutes({ group: G }),
       'POST /api/groups/1/members': add,
     })
     renderApp('/groups/1')
@@ -84,8 +87,7 @@ describe('GroupPage', () => {
   it('shows add-member error', async () => {
     loggedIn()
     mockFetch({
-      'GET /api/auth/me': () => jsonResponse(200, ALICE),
-      'GET /api/groups/1': () => jsonResponse(200, G),
+      ...groupRoutes({ group: G }),
       'POST /api/groups/1/members': () =>
         jsonResponse(404, { detail: 'user not found' }),
     })
@@ -101,8 +103,7 @@ describe('GroupPage', () => {
   it('ac7 shows the outstanding amount when leaving is refused', async () => {
     loggedIn()
     mockFetch({
-      'GET /api/auth/me': () => jsonResponse(200, ALICE),
-      'GET /api/groups/1': () => jsonResponse(200, G),
+      ...groupRoutes({ group: G }),
       'POST /api/groups/1/leave': () =>
         jsonResponse(409, {
           detail:
@@ -121,8 +122,7 @@ describe('GroupPage', () => {
   it('leaving returns to the group list', async () => {
     loggedIn()
     mockFetch({
-      'GET /api/auth/me': () => jsonResponse(200, ALICE),
-      'GET /api/groups/1': () => jsonResponse(200, G),
+      ...groupRoutes({ group: G }),
       'POST /api/groups/1/leave': () => jsonResponse(204),
       'GET /api/groups': () => jsonResponse(200, []),
     })

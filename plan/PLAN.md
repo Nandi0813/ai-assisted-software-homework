@@ -41,7 +41,7 @@ Status markers:
 
 **D13. Dual-tool implementation [confirmed 2026-10-11, grading: 5 points].** Stage 06 is implemented twice from the same spec and the same `AGENTS.md`:
 - **Tool A:** the Claude Code `implementer` subagent, on `main`.
-- **Tool B:** Google Antigravity (Gemini, the course-provided access), on the branch `compare/06-antigravity`, cut from the same base commit.
+- **Tool B:** Gemini CLI (Gemini, the course-provided access), run headless by main on the branch `compare/06-antigravity` (branch name kept), cut from the same base commit. *Changed 2026-11-14 by the user: Gemini CLI instead of the Antigravity IDE, so main can run and time it.*
 
 Both runs are measured on the same criteria:
 - the Tier 1 and Tier 2 results;
@@ -55,7 +55,7 @@ The result goes in `docs/AI_USAGE.md` under "Dual implementation". The branch is
 
 **D14. Working-method comparison [confirmed 2026-10-11, grading: 2 MSc points].** One small UI feature, the settle-up panel in stage 08, is built twice:
 - **Method 1:** spec-driven. Main writes the spec and the implementer transcribes it.
-- **Method 2:** direct prompting. The user prompts one agent session conversationally from the acceptance-criterion text only, with no spec. This runs on the branch `compare/08-direct`.
+- **Method 2:** direct prompting. One fresh agent session is prompted conversationally from the acceptance-criterion text only, with no spec. This runs on the branch `compare/08-direct`, cut from stage 07 (`557ddf1`). *Changed 2026-11-14 by the user: main sends the conversational prompt to a fresh general-purpose agent.*
 
 The comparison uses the same tests and review checklist. The result goes in `docs/AI_USAGE.md` under "Working methods".
 
