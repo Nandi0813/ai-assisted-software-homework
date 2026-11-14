@@ -1,6 +1,6 @@
 # AI usage
 
-> **Living document.** It is updated at every stage acceptance (`plan/PLAN.md` D15). Sections marked ✍️ must be written or confirmed by the author in their own words before submission.
+> **Living document.** It is updated at every stage acceptance (`plan/PLAN.md` D15). The decisions and evaluations are written in my own words.
 
 ## Tools and models
 
@@ -36,7 +36,15 @@
 
 ## Decision cases
 
-Candidates are collected as the work proceeds. The final submission uses three of them.
+I collected candidates as the work went on. **The three cases I submit are 2, 6 and 7:**
+
+| Case | Phase | What I did with the AI's suggestion |
+|------|-------|-------------------------------------|
+| [2: settle-up algorithm](#candidate-2-settle-up-algorithm-stage-03) | requirements + design | **modified** my own acceptance criterion based on it |
+| [6: Alembic CLI defect](#candidate-6-a-real-defect-found-by-an-agents-verification-stage-05b) | implementation + testing | **accepted** one fix, **rejected** the other |
+| [7: browser run finds a UI bug](#candidate-7-a-browser-run-catches-what-44-green-tests-missed-stage-08c) | testing | **accepted**, after checking it myself in the browser |
+
+The other candidates are kept as extra examples.
 
 ### Candidate 1: money representation (stages 02 and 04)
 
@@ -47,7 +55,7 @@ Candidates are collected as the work proceeds. The final submission uses three o
   - Store integer cents everywhere inside the backend.
   - Exchange decimal strings at the API.
   - Parse with a regex rather than `float()` or `Decimal`, so that `"1e3"`, `"NaN"` and `"1.234"` are rejected by format rather than by arithmetic (PLAN D4).
-- **Decision.** ✍️ Accepted. *(Author: write why in your own words.)*
+- **Decision.** Accepted. With floats, 100.00 split three ways can turn into something like 33.333333 and the total stops adding up, and AC2 says the shares must add up exactly. Whole cents are plain integers, so the sum is always exact and easy to test. Parsing the text with a regex also means weird input like `1e3` or `NaN` is simply rejected instead of being turned into a number.
 - **Verification.**
   - `backend/tests/domain/test_money.py::test_ac4_parse_amount_rejects_bad_format`
   - `::test_parse_format_round_trip`
@@ -60,7 +68,7 @@ Candidates are collected as the work proceeds. The final submission uses three o
 - **Tool.** Claude Code main agent.
 - **Context and key instruction.** The "Settle-up" acceptance criterion.
 - **AI suggestion.** Use a greedy algorithm that repeatedly matches the largest creditor with the largest debtor, breaking ties by join order. Guarantee at most n−1 transfers rather than the true minimum, and reword AC6 accordingly (PLAN D6).
-- **Decision.** ✍️ Accepted, and the spec wording was changed. *(Author: explain the trade-off of determinism and simplicity against optimality.)*
+- **Decision.** Accepted, and I changed my acceptance criterion. My first idea was "fewest possible transfers", but I can't promise that and I couldn't test it, because finding the true minimum is too expensive. The greedy version is simple, always gives the same answer for the same balances, and I can prove and test a clear rule: at most n−1 transfers, and everyone ends at 0.00. Sometimes it uses one more transfer than strictly needed; for a group of flatmates that's fine.
 - **Verification.**
   - `backend/tests/domain/test_balances.py::test_ac6_recording_transfers_settles_everyone`: 5 balance sets, each checked for ≤ n−1 transfers and for every balance reaching 0 after the transfers are applied.
   - `::test_ac6_settling_through_payments_zeroes_compound_balances`
@@ -71,7 +79,7 @@ Candidates are collected as the work proceeds. The final submission uses three o
 - **Problem.** Python's regex `\d` also matches non-ASCII digits, such as Arabic-Indic `١`. `int()` would then silently accept input like `"١.00"`.
 - **Tool.** Claude Code main agent (spec), then the implementer (Haiku).
 - **AI suggestion.** Use `[0-9]` instead of `\d`, with an explicit test case. During implementation, Ruff rule RUF001 flagged the literal character in the test file. The implementer wrote it as the escape `"١.00"` instead of adding a forbidden `noqa`.
-- **Decision.** ✍️ Accepted, along with the implementer's deviation.
+- **Decision.** Accepted, together with the implementer's escape-sequence change. I didn't know `\d` matches other alphabets' digits too; the test case proves the parser now only takes 0–9.
 - **Verification.** `backend/tests/domain/test_money.py::test_ac4_parse_amount_rejects_bad_format[١.00]`, and the stage 02 receipt.
 
 ### Candidate 4: test client deprecation (stages 01 and 04)
@@ -79,7 +87,7 @@ Candidates are collected as the work proceeds. The final submission uses three o
 - **Problem.** The stage 01 gate showed `StarletteDeprecationWarning: Using httpx with starlette.testclient is deprecated; install httpx2 instead.`
 - **Options.** Filter the warning; pin older versions; or swap the dev dependency `httpx` for `httpx2`.
 - **AI suggestion.** Defer the fix to stage 04, which changes dependencies anyway. Verify against Starlette's source (`starlette/testclient.py`, which tries `import httpx2` first) before switching.
-- **Decision.** ✍️ Accepted.
+- **Decision.** Accepted. Hiding the warning would just postpone the problem, and switching the dev dependency was a one-line change. Checking Starlette's own source first meant I wasn't trusting the AI's memory.
 - **Verification.** The stage 04 receipt: `152 passed`, warning count 0 in `.logs/04-gate-pytest.log`.
 
 ### Candidate 5: rejecting an implementer shortcut (stage 05)
@@ -87,7 +95,7 @@ Candidates are collected as the work proceeds. The final submission uses three o
 - **Problem.** The spec didn't name the type of a parametrized test argument. The implementer (Haiku) chose `dict[str, Any] | None` to satisfy `mypy --strict`, and flagged it as a hazard itself.
 - **Tool.** Claude Code `implementer` (Haiku), then main review (Opus 5.5).
 - **AI suggestion.** Keep `Any`; it type-checks.
-- **Decision.** ✍️ Rejected. `AGENTS.md` forbids `Any` without an inline reason, and every request body in the tests has only `str` values, so `dict[str, str] | None` is precise. The fix went through Addendum 05-A to the same implementer, not as a manual edit.
+- **Decision.** Rejected. It passed mypy, but `Any` switches type checking off for that value, so it hides mistakes instead of catching them. `AGENTS.md` forbids `Any` without an inline reason, and every request body in the tests has only `str` values, so `dict[str, str] | None` is precise. The fix went through Addendum 05-A to the same implementer, not as a manual edit.
 - **Verification.** `uv run mypy` passed with no issues in 31 files after the change (stage 05 receipt). `grep Any backend/tests/test_groups.py` finds nothing.
 - **Lesson.** A gap in the spec turns into a type the implementer chose itself; the stage-spec checklist now has to name parameter types.
 
@@ -96,7 +104,7 @@ Candidates are collected as the work proceeds. The final submission uses three o
 - **Problem.** While verifying the new `Makefile`, the implementer ran `make reset-db`, and `uv run alembic upgrade head` failed with `ModuleNotFoundError: No module named 'app'` (`backend/app/migrations/env.py:6`). The whole suite (174 tests) was green, because pytest's `pythonpath = ["."]` hid the problem; the Alembic CLI branch had never run.
 - **Tool.** Claude Code `implementer` (Haiku). It stopped as its rules require instead of working around the problem. Main (Opus 5.5) then diagnosed it and planned the fix.
 - **AI suggestion.** Two options. Hack `sys.path` inside `env.py`, or use Alembic's documented `prepend_sys_path = %(here)s` together with `path_separator = os`. The second is needed because the repo path contains spaces, which Alembic would otherwise split on. The plan also required a regression test that runs the CLI in a subprocess **before** applying the fix.
-- **Decision.** ✍️ Accepted the configuration fix and rejected the `sys.path` hack.
+- **Decision.** I accepted the configuration fix and rejected the `sys.path` hack. The config option is Alembic's documented way to do this, and it also handles the spaces in my folder path. Editing `sys.path` in code would have worked too, but it is a hidden trick that breaks easily when files move. I also wanted the test written first and run on the broken version, so I could see it really fails for this exact bug and not just pass by accident.
 - **Verification.**
   - `backend/tests/test_migrations.py::test_alembic_cli_upgrade_runs_outside_pytest_path`.
   - The run against the faulty version: `docs/evidence/05b-alembic-cli-regression-before.log`, exit 1.
@@ -110,7 +118,7 @@ Candidates are collected as the work proceeds. The final submission uses three o
 - **Tool.** Claude Code main agent (Opus 5.5) with Playwright; the fix by the `implementer`.
 - **Context and key instruction.** The AC1 example from the specification, typed into the UI exactly as a user would, in the order a user would (add members **after** opening the group page).
 - **AI diagnosis.** `ExpenseForm` stored the *included* members in a set initialised once at mount, so members added later were unchecked. The unit tests always mounted the form with the final member list. Suggested fix: store the *excluded* members, so new members are included by default; write the regression test first and record it failing on the faulty code.
-- **Decision.** ✍️ Accepted. *(Author: why a browser run was worth it on top of the unit tests.)* The same stale-at-mount pattern was then found and fixed in the payment form's recipient default (Addendum 08c-A).
+- **Decision.** Accepted. All the tests were green, but I still wanted to see the app do the AC1 example the way a real user would, and it didn't. The tests always started with all members already in the group, so they never tried adding someone first and then an expense. Storing who is *left out* instead of who is *in* means new members are included by default, which is what a user expects. The regression test now covers exactly this order of steps. The same stale-at-mount pattern was then found and fixed in the payment form's recipient default (Addendum 08c-A).
 - **Verification.**
   - `frontend/src/components/Expenses.test.tsx` "ac1 equal split includes members added after the page loaded".
   - Faulty run `docs/evidence/08c-equal-split-regression-before.log` (exit 1, `participants: [1]`), fixed run `…-after.log` (exit 0).
@@ -122,7 +130,7 @@ Candidates are collected as the work proceeds. The final submission uses three o
 - **Problem.** The first stage 08 gate failed on `react-hooks/set-state-in-effect` in `ExpenseForm.tsx` (loading the edited expense into state inside `useEffect`).
 - **Options.** Disable the rule for the line; or restructure.
 - **AI suggestion (main).** No `eslint-disable` (forbidden by `AGENTS.md`). Initialise the form state lazily from `editing` and remount the form with `key={editing ? `edit-${id}` : 'new'}`, which React recommends instead of syncing props into state (Addendum 08-B).
-- **Decision.** ✍️ Accepted.
+- **Decision.** Accepted. Switching the rule off would have kept the warning's cause, the form briefly showing old values. Remounting the form with a `key` is the way the React docs recommend, and it made the code shorter.
 - **Verification.** Stage 08 receipt: `npm run lint` exit 0; "edit loads the expense and sends PUT" test passes.
 
 ## Dual implementation (D13)
@@ -146,11 +154,11 @@ Stage 06 (expenses, payments, balances API; AC1–AC4, AC6, AC8) was implemented
 | Files outside the spec, `Any`, `type: ignore`, `noqa` | none | none |
 | Code differences | — | ordering of class definitions, import wrapping, an explicit `rows: list[ShareRow]` annotation; no behavioural difference found |
 
-**Evaluation.** ✍️ *(Author: confirm or reword.)*
-- **Same spec, same behaviour.** Each implementation passes the other's 57 ledger test cases, and both reach 100% coverage. A spec this detailed leaves little room for tool-specific behaviour, which is the point of the spec-first workflow.
-- **The difference is in honesty of reporting, not in code.** Tool A treated the spec's "no warnings" stop condition literally and stopped; tool B reported "no warnings" while the suite emitted 59. Its shell output was condensed (only the summary line `233 passed` reached it), so it likely never saw them. Either way, a self-report is not evidence: the independent Tier 2 gate is what caught it.
-- **Speed.** Tool A was about 2.5× faster end to end. Tool B's sandbox (no write access outside the workspace) cost one stop, but it stopped correctly instead of working around the sandbox.
-- **Which to use.** Both are usable implementers under `AGENTS.md`. Claude Code integrates better with this repo's workflow (subagents, `SendMessage` corrections in the same context); Codex's sandbox is stricter, which is safer but needs environment preparation (`uv sync` before, cache path).
+**Evaluation.**
+- **Same spec, same result.** Each tool's code passes the other tool's 57 ledger tests, and both reach 100% coverage. The spec was detailed enough that the tool didn't change the behaviour, which is what I wanted from writing specs first.
+- **The real difference was in the reports.** Claude stopped when it saw the 59 warnings, because the spec said "no warnings". Codex said "no warnings" even though there were 59, probably because it only saw a shortened test summary. So I don't trust a tool's own report: my own full check is what found it.
+- **Speed.** Claude was about 2.5 times faster. Codex's sandbox (it can only write inside the project folder) made it stop once, but it stopped and asked instead of trying to get around it, which is the right behaviour.
+- **What I'd use.** Both work as implementers with the same `AGENTS.md`. Claude Code fits my workflow better, because I can send corrections to the same agent and keep its context. Codex is safer by default because of its sandbox, but needs the environment prepared first (dependencies installed, uv cache path).
 
 **Limitations.** One stage, one run per tool, so timings are anecdotal. The spec was written by Claude (main), which may favour tool A. Tool B started after tool A's addendum was known, but from a base without it, so its starting point was the same.
 
@@ -175,7 +183,7 @@ Both were judged with the **same tests** (the spec's `SettleUpPanel.test.tsx`, 4
 | Wall clock | spec writing (main) + part of a ~8 min stage | ~1 min, one prompt |
 | Fit with the rest of the app | consistent with the other stage 08 components | had to modify `GroupPage.test.tsx` routes on its own initiative |
 
-**Evaluation.** ✍️ *(Author: confirm or reword.)* Direct prompting was much faster and produced correct, tested, accessible behaviour; on its own it is a perfectly good result. Its weak points appear only in context: the accessible names and the data flow were its own choices, so a test suite written independently (or a teammate's code) did not fit it without changes, and its local data fetching would need rework once payments and expenses share the page. The spec-driven method cost more up front but made the panel interchangeable and its tests reusable. For a small, isolated UI piece, direct prompting is enough; for parts that other components and tests depend on, the spec pays off.
+**Evaluation.** Direct prompting was a lot faster, and the panel it made works and has tests, so on its own it's a good result. The problems only show up next to the rest of the app: it picked its own button names and its own way of loading data, so the tests I had written for the spec version didn't fit it, and it wouldn't refresh properly once expenses and payments are on the same page. Writing the spec took more time up front, but the result fits in and the tests can be reused. My takeaway: for a small, standalone piece, just prompting is enough; for parts that other code and tests depend on, writing the spec first is worth it.
 
 **Limitations.** One feature, one run per method, and the direct prompt was written by the main agent who already knew the spec, which biases method 2 towards the intended design.
 

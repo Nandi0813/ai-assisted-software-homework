@@ -7,6 +7,6 @@
 - The browser run found a real defect, fixed in stage 08c. Its faulty and fixed logs are in `docs/evidence/`.
 
 **Next:**
-1. The user rewrites or confirms every ✍️ decision reason in `docs/AI_USAGE.md` and picks the final 3 decision cases. Strong candidates are 6, 7 and 5 or 2.
+1. The user reads `docs/AI_USAGE.md` before the defence; the decision reasons were drafted in their voice at their request. The final cases are 2, 6 and 7.
 2. The user pushes `main`, `v1.0`, `compare/08-direct` and `compare/06-antigravity`, then submits the milestone in Moodle.
 3. Stage 10: the instructor's change request, implemented from `v1.0`, with regression checks and data-preservation checks.
