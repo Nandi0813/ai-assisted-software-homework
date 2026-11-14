@@ -1,0 +1,9 @@
+
+ RUN  v5.0.3 <repo>/frontend
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 9 skipped (10)
+   Start at  09:49:40
+   Duration  453ms (environment 51%, tests 23%, transform 10%, setup 9%, import 6%)
+

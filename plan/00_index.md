@@ -14,5 +14,6 @@ Sequence toward the first working version (week 10), then the final version (wee
 | 06b | `06b_leave_rejoin.md`: leave a group only with a zero balance (409 showing the outstanding amount), rejoin keeps the original join position (AC7) | accepted | 06 |
 | 07 | `07_frontend_auth_groups.md`: register and login screens, token handling, group list, create group, add member, leave group | accepted | 06b |
 | 08 | `08_frontend_expenses.md`: expense form (equal, exact, percent), balances view, settle-up panel. **Settle-up panel built twice: spec-driven and direct prompting (D14)** | accepted | 06b, 07 |
+| 08c | `08c_fix_equal_split_new_members.md`: bug found in the browser run, equal split and payment recipient ignored members added after the page loaded; regression test with faulty/fixed logs | accepted | 08 |
 | 09 | `09_deliverables_v1.md`: README setup, `docs/TESTING.md` mapping each criterion to its checks with manual steps, faulty and fixed test with both logs, explicit regression test, `docs/AI_USAGE.md` finalized, `v1.0` tag | not written | 08 |
 | 10 | `10_change_request.md`: the instructor's change request, implemented from `v1.0` with regression and data-preservation checks | blocked (awaiting change request) | 09 |

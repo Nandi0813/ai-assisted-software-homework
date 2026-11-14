@@ -43,10 +43,14 @@ export function ExpenseForm({
   const [splitType, setSplitType] = useState<SplitType>(
     () => editing?.split_type ?? 'equal',
   )
-  const [checked, setChecked] = useState<Set<number>>(() =>
-    editing === null
-      ? new Set(members.map((m) => m.id))
-      : new Set(editing.shares.map((s) => s.user_id)),
+  const [excluded, setExcluded] = useState<Set<number>>(() =>
+    editing !== null && editing.split_type === 'equal'
+      ? new Set(
+          members
+            .filter((m) => !editing.shares.some((s) => s.user_id === m.id))
+            .map((m) => m.id),
+        )
+      : new Set(),
   )
   const [values, setValues] = useState<Record<number, string>>(() => {
     const next: Record<number, string> = {}
@@ -67,7 +71,7 @@ export function ExpenseForm({
     setAmount('')
     setPayerId(defaultPayer(members, currentUserId))
     setSplitType('equal')
-    setChecked(new Set(members.map((m) => m.id)))
+    setExcluded(new Set())
     setValues({})
   }
 
@@ -91,7 +95,9 @@ export function ExpenseForm({
     if (splitType === 'equal') {
       return {
         type: 'equal',
-        participants: members.filter((m) => checked.has(m.id)).map((m) => m.id),
+        participants: members
+          .filter((m) => !excluded.has(m.id))
+          .map((m) => m.id),
       }
     }
     const filled = members.flatMap((m) => {
@@ -120,8 +126,8 @@ export function ExpenseForm({
     })
   }
 
-  function toggleChecked(id: number) {
-    setChecked((prev) => {
+  function toggleExcluded(id: number) {
+    setExcluded((prev) => {
       const next = new Set(prev)
       if (next.has(id)) {
         next.delete(id)
@@ -191,8 +197,8 @@ export function ExpenseForm({
             <label key={m.id}>
               <input
                 type="checkbox"
-                checked={checked.has(m.id)}
-                onChange={() => toggleChecked(m.id)}
+                checked={!excluded.has(m.id)}
+                onChange={() => toggleExcluded(m.id)}
               />{' '}
               {m.username}
             </label>

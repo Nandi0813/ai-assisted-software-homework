@@ -29,9 +29,8 @@ export function PaymentForm({
   const [fromId, setFromId] = useState(() =>
     defaultFrom(members, currentUserId),
   )
-  const [toId, setToId] = useState(() =>
-    defaultTo(members, defaultFrom(members, currentUserId)),
-  )
+  const [toId, setToId] = useState<number | null>(null)
+  const effectiveTo = toId ?? defaultTo(members, fromId)
   const [amount, setAmount] = useState('')
   const [error, setError] = useState<string | null>(null)
 
@@ -50,7 +49,11 @@ export function PaymentForm({
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    record.mutate({ from_id: fromId, to_id: toId, amount: amount.trim() })
+    record.mutate({
+      from_id: fromId,
+      to_id: effectiveTo,
+      amount: amount.trim(),
+    })
   }
 
   return (
@@ -71,7 +74,10 @@ export function PaymentForm({
       </label>
       <label>
         To
-        <select value={toId} onChange={(e) => setToId(Number(e.target.value))}>
+        <select
+          value={effectiveTo}
+          onChange={(e) => setToId(Number(e.target.value))}
+        >
           {members.map((m) => (
             <option key={m.id} value={m.id}>
               {m.username}

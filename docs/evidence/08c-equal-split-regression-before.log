@@ -1,0 +1,43 @@
+
+ RUN  v5.0.3 <repo>/frontend
+
+ ❯ src/components/Expenses.test.tsx (10 tests | 1 failed | 9 skipped) 96ms
+   ❯ Expenses (10)
+     × ac1 equal split includes members added after the page loaded 95ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/Expenses.test.tsx > Expenses > ac1 equal split includes members added after the page loaded
+AssertionError: expected { description: 'Dinner', …(3) } to deeply equal { description: 'Dinner', …(3) }
+
+- Expected
++ Received
+
+@@ -3,10 +3,9 @@
+    "description": "Dinner",
+    "payer_id": 1,
+    "split": {
+      "participants": [
+        1,
+-       2,
+      ],
+      "type": "equal",
+    },
+  }
+
+ ❯ src/components/Expenses.test.tsx:137:47
+    135|     await waitFor(() => expect(created).toHaveBeenCalledTimes(1))
+    136|     seen.push(created.mock.calls[0]?.[0])
+    137|     expect(JSON.parse(String(seen[0]?.body))).toEqual({
+       |                                               ^
+    138|       description: 'Dinner',
+    139|       amount: '90.00',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 9 skipped (10)
+   Start at  09:49:24
+   Duration  453ms (environment 51%, tests 24%, transform 10%, setup 9%, import 6%)
+

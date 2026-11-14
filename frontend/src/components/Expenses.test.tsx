@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { screen, fireEvent, waitFor } from '@testing-library/react'
+import { screen, fireEvent, waitFor, within } from '@testing-library/react'
 import { setToken, type Expense } from '../api'
 import {
   ALICE,
@@ -94,6 +94,48 @@ describe('Expenses', () => {
     fillDinner('90.00')
     fireEvent.click(screen.getByRole('button', { name: 'Add expense' }))
     await waitFor(() => expect(seen).toHaveLength(1))
+    expect(JSON.parse(String(seen[0]?.body))).toEqual({
+      description: 'Dinner',
+      amount: '90.00',
+      payer_id: 1,
+      split: { type: 'equal', participants: [1, 2] },
+    })
+  })
+
+  it('ac1 equal split includes members added after the page loaded', async () => {
+    loggedIn()
+    const seen: Array<RequestInit | undefined> = []
+    const created = vi.fn<Handler>(() => jsonResponse(201, CREATED))
+    mockFetch({
+      ...groupRoutes({
+        group: { id: 1, name: 'Trip', members: [ALICE], former_members: [] },
+      }),
+      'POST /api/groups/1/members': () =>
+        jsonResponse(201, {
+          id: 1,
+          name: 'Trip',
+          members: [ALICE, BOB],
+          former_members: [],
+        }),
+      'POST /api/groups/1/expenses': created,
+    })
+    renderApp('/groups/1')
+    await screen.findByRole('heading', { name: 'Trip' })
+    fireEvent.change(screen.getByLabelText('Add member by username'), {
+      target: { value: 'bob' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Add member' }))
+    await waitFor(() =>
+      expect(
+        within(screen.getByRole('region', { name: 'Members' })).getByText(
+          'bob',
+        ),
+      ).toBeInTheDocument(),
+    )
+    fillDinner('90.00')
+    fireEvent.click(screen.getByRole('button', { name: 'Add expense' }))
+    await waitFor(() => expect(created).toHaveBeenCalledTimes(1))
+    seen.push(created.mock.calls[0]?.[0])
     expect(JSON.parse(String(seen[0]?.body))).toEqual({
       description: 'Dinner',
       amount: '90.00',
