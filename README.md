@@ -4,11 +4,9 @@ A web app for splitting shared expenses in a group. Members record what they pai
 
 Individual homework project for the *AI Assisted Software Development* MSc course (2026).
 
-> **Status:** in development.
-> - Done: the backend domain rules, persistence, authentication and the groups API.
-> - Next: the expenses and payments API, then the UI. Until the UI lands, use the interactive API docs (see [First steps](#first-steps)).
+> **Status:** first working version (`v1.0`). All 8 acceptance criteria are implemented end to end and verified (see [docs/TESTING.md](docs/TESTING.md)).
 >
-> Progress: [plan/00_index.md](plan/00_index.md).
+> Progress and stage receipts: [plan/00_index.md](plan/00_index.md). How AI was used: [docs/AI_USAGE.md](docs/AI_USAGE.md).
 
 ## Contents
 
@@ -77,13 +75,16 @@ This starts both servers with hot reload. Press **Ctrl-C** to stop both.
 
 ## First steps
 
-Try the API in Swagger UI at http://127.0.0.1:8000/docs:
+Run `make dev` and open http://localhost:5173.
 
-1. `POST /api/auth/register` with `{"username": "alice", "password": "correct-horse"}`.
-2. Click **Authorize** and log in as `alice` / `correct-horse`.
-3. `POST /api/groups` with `{"name": "Trip"}`.
-4. Register a second user, `bob`, then `POST /api/groups/1/members` with `{"username": "bob"}`.
-5. `GET /api/groups/1` lists both members in the order they joined.
+1. Click **Need an account? Register** and create `alice` (password at least 8 characters). Register `bob` and `carol` the same way (log out in between), then log in as `alice`.
+2. Create a group "Trip" and add `bob` and `carol` by username.
+3. Add an expense "Dinner", 90.00, split **Equal**: balances become alice `60.00`, bob `-30.00`, carol `-30.00`.
+4. Try **Exact amounts** or **Percentages** splits; a split that doesn't add up is rejected with the server's message.
+5. **Settle up** lists the suggested transfers; **Record** each one and all balances go to `0.00`.
+6. **Leave group** only works with a `0.00` balance; otherwise the outstanding amount is shown.
+
+The API is also browsable in Swagger UI at http://127.0.0.1:8000/docs.
 
 ## Testing and quality checks
 
@@ -96,7 +97,7 @@ Try the API in Swagger UI at http://127.0.0.1:8000/docs:
 | `make format` | Auto-formats both sides (**writes files**) |
 | `make check` | The full quality gate: tests with backend coverage of at least 90%, type checks, lint, format check and production build |
 
-A table mapping each acceptance criterion to the checks that verify it will be added as `docs/TESTING.md` in stage 09.
+[docs/TESTING.md](docs/TESTING.md) maps each acceptance criterion to its automated tests and reproducible manual steps, and links the faulty-vs-fixed test runs in `docs/evidence/`.
 
 ## Database
 
@@ -133,6 +134,8 @@ backend/            FastAPI app (Python 3.14, uv)
   app/migrations/   Alembic migrations
   tests/            pytest suite
 frontend/           React + Vite + TypeScript app
+  src/pages/        Login, group list, group page
+  src/components/   Expense form and list, balances, settle-up, payments
 docs/               Specification, AI usage, testing evidence
 plan/               Architecture decisions and stage specs, with acceptance receipts
 AGENTS.md           Rules for the AI agents working in this repo
@@ -142,6 +145,7 @@ Makefile            Developer commands
 ## Documentation
 
 - [Specification and acceptance criteria](docs/SPECIFICATION.md)
-- [AI usage and decision cases](docs/AI_USAGE.md)
+- [AI usage and decision cases](docs/AI_USAGE.md): tools, models, working method, decision cases, the dual-tool and working-method comparisons
+- [Testing: criteria → checks, evidence](docs/TESTING.md)
 - [Agent workflow rules](AGENTS.md) and [architecture decisions](plan/PLAN.md)
 - Course requirements are published in Moodle and are not redistributed here.

@@ -1,12 +1,12 @@
 # What's next
 
-**State (2026-10-11):**
-- The specification is drafted (`docs/SPECIFICATION.md`). It hasn't been submitted to Moodle yet; the deadline is the end of week 6.
-- Stages 01–05, 05b and 06 (tool A) are accepted, and the gate is green. Backend: 233 tests, 100% coverage, 0 warnings. `make dev` starts both servers, and the README documents setup.
-- The grading-gap items are planned: D13 (dual-tool), D14 (working methods), D15 (`docs/AI_USAGE.md` log) and D16 (the `gate` and `stage-spec` skills). The stage index runs 05–10.
+**State (2026-11-14):**
+- Stages 01–09 are accepted. `v1.0` is tagged: the first working version, with all 8 acceptance criteria working end to end. `make check` is green: backend 241 tests at 100% coverage, frontend 46 tests, plus lint, types and build.
+- D14, the working-method comparison, is done and written up in `docs/AI_USAGE.md`. The direct-prompting version is on branch `compare/08-direct` (worktree `../hw-compare-08-direct`).
+- The browser run found a real defect, fixed in stage 08c. Its faulty and fixed logs are in `docs/evidence/`.
 
 **Next:**
-1. The user runs Antigravity on the worktree `../hw-compare-06-antigravity` (branch `compare/06-antigravity`, base `82b3ef0`) and records start and end times and interventions. Then main reviews and gates it and writes the D13 comparison.
-2. Main writes `plan/06b_leave_rejoin.md` (AC7), and removes the unused `LedgerService._users`.
-3. The user writes or confirms the ✍️ decision reasons in `docs/AI_USAGE.md`.
-4. The user removes the stale root `.venv`, points the IDE interpreter at `backend/.venv`, and pushes the local commits.
+1. **D13 (blocked on the user).** Run Gemini CLI as tool B on stage 06, in the worktree `../hw-compare-06-antigravity` (branch `compare/06-antigravity`, base `82b3ef0`). The auto-mode classifier refused the headless `gemini --approval-mode yolo` run, so the user must allow it or run it with `!`. Then main reviews it, gates it, commits it on the branch and writes "Dual implementation" in `docs/AI_USAGE.md`.
+2. The user rewrites or confirms every ✍️ decision reason in `docs/AI_USAGE.md` and picks the final 3 decision cases. Strong candidates are 6, 7 and 5 or 2.
+3. The user pushes `main`, `v1.0`, `compare/08-direct` and, once it exists, `compare/06-antigravity`, then submits the milestone in Moodle.
+4. Stage 10: the instructor's change request, implemented from `v1.0`, with regression checks and data-preservation checks.
